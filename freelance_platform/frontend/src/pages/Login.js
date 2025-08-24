@@ -4,7 +4,7 @@ import { loginUser } from '../api/auth';
 import '../styles/pages/Login.css';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,8 +22,8 @@ const Login = () => {
     e.preventDefault();
     
     // Validate form
-    if (!username || !password) {
-      setError('Please enter both username and password');
+    if (!email || !password) {
+      setError('Please enter both email and password');
       return;
     }
     
@@ -31,7 +31,7 @@ const Login = () => {
     setError('');
     
     try {
-      const response = await loginUser(username, password);
+      const response = await loginUser(email, password);
       
       // Store tokens and user data in localStorage
       localStorage.setItem('accessToken', response.access_token);
@@ -66,13 +66,13 @@ const Login = () => {
             
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="username">Username</label>
+                <label htmlFor="email">Email Address</label>
                 <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
                   disabled={loading}
                 />
               </div>
