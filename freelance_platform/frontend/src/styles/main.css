@@ -667,7 +667,7 @@ input[type="radio"] {
 }
 
 [data-theme="dark"] .footer {
-  background-color: var(--secondary-dark);
+  background-color: var(--primary-dark); /* Dark navy blue */
 }
 
 [data-theme="dark"] h1, 
@@ -1409,6 +1409,22 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   background-color: var(--bg-light);
   transition: background-color 0.3s ease;
+}
+
+/* Footer styling */
+.footer {
+  width: 100%;
+  background-color: var(--primary-color); /* Navy blue footer */
+  color: white;
+  padding: var(--spacing-lg) 0;
+}
+
+.footer a {
+  color: white;
+}
+
+.footer a:hover {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 [data-theme="dark"] .main-content {
