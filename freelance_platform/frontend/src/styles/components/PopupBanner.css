@@ -4,12 +4,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.85); /* Darker, less transparent background */
+  background-color: rgba(0, 0, 0, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  animation: fadeIn 0.5s ease-in-out; /* Smoother fade in */
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .popup-banner {
@@ -18,7 +18,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: white;
-  width: 85%;
+  width: 90%;
   max-width: 500px;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -28,6 +28,8 @@
   display: flex;
   flex-direction: column;
   animation: slideInAndFade 0.5s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes slideInAndFade {
@@ -489,4 +491,137 @@
 
 [data-theme="dark"] .popup-socials a:hover {
   background-color: var(--primary);
+}
+
+/* Improved Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .popup-banner {
+    width: 90%;
+    padding: 1.75rem;
+  }
+  
+  .popup-content h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+  }
+  
+  .popup-content p {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+  
+  .popup-contact {
+    margin: 20px 0;
+    padding: 15px;
+  }
+  
+  .popup-socials {
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .popup-socials a {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .popup-banner {
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  
+  .popup-content h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+  
+  .popup-content h2:after {
+    width: 60px;
+    height: 2px;
+  }
+  
+  .popup-content p {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  .popup-contact {
+    margin: 15px 0;
+    padding: 12px;
+  }
+  
+  .popup-contact p {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  .popup-contact p i {
+    margin-right: 8px;
+  }
+  
+  .popup-socials {
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .popup-socials a {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  .popup-close {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    top: 8px;
+    right: 8px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .popup-banner {
+    width: 98%;
+    padding: 1.25rem;
+  }
+  
+  .popup-content h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .popup-content p {
+    font-size: 0.85rem;
+  }
+  
+  .popup-contact {
+    padding: 10px;
+    margin: 12px 0;
+  }
+  
+  .popup-contact p {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+  
+  .popup-socials a {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .popup-close {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+  }
 }
