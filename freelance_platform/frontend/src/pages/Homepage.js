@@ -239,7 +239,7 @@ const Homepage = () => {
               </div>
               <div className="testimonial-author">
                 <div className="author-avatar">
-                  <img src="/images/testimonial1.jpg" alt="Client" />
+                  <img src="/freelanceprosl/images/testimonial1.jpg" alt="Client" />
                 </div>
                 <div className="author-info">
                   <h4>Sarah Johnson</h4>
@@ -254,7 +254,7 @@ const Homepage = () => {
               </div>
               <div className="testimonial-author">
                 <div className="author-avatar">
-                  <img src="/images/testimonial2.jpg" alt="Freelancer" />
+                  <img src="/freelanceprosl/images/testimonial2.jpg" alt="Freelancer" />
                 </div>
                 <div className="author-info">
                   <h4>Michael Chen</h4>
@@ -269,7 +269,7 @@ const Homepage = () => {
               </div>
               <div className="testimonial-author">
                 <div className="author-avatar">
-                  <img src="/images/testimonial3.jpg" alt="Client" />
+                  <img src="/freelanceprosl/images/testimonial3.jpg" alt="Client" />
                 </div>
                 <div className="author-info">
                   <h4>David Thompson</h4>
