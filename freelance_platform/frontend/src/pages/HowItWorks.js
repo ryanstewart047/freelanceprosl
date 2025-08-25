@@ -1,8 +1,44 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/pages/HowItWorks.css';
 
 const HowItWorks = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const slides = [
+    {
+      id: 1,
+      title: "Find Top Talent in Sierra Leone",
+      description: "Connect with skilled professionals ready to bring your projects to life",
+      image: "https://img.freepik.com/free-photo/african-american-business-man-working-laptop-cafe_1303-10860.jpg",
+      ctaText: "Hire Freelancers"
+    },
+    {
+      id: 2,
+      title: "Showcase Your Skills & Earn",
+      description: "Join our community of freelancers and start your professional journey",
+      image: "https://img.freepik.com/free-photo/group-diverse-people-having-business-meeting_53876-25060.jpg",
+      ctaText: "Find Work"
+    },
+    {
+      id: 3,
+      title: "Secure, Simple & Transparent",
+      description: "Our platform ensures safe payments and clear communication every step of the way",
+      image: "https://img.freepik.com/free-photo/business-concept-smiling-businesswoman-showing-presentation-meeting_53876-96854.jpg",
+      ctaText: "Learn More"
+    }
+  ];
+
+  useEffect(() => {
+    // Auto-slide timer
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+    }, 5000);
+    
+    // Cleanup timer
+    return () => clearInterval(slideTimer);
+  }, [slides.length]);
+  
   useEffect(() => {
     // Add scroll animation observer
     const animateOnScroll = () => {
@@ -27,31 +63,52 @@ const HowItWorks = () => {
     }, 100);
   }, []);
 
+  const nextSlide = () => {
+    setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prevSlide) => (prevSlide - 1 + slides.length) % slides.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
   return (
     <div className="how-it-works-page">
-      <div className="hero-section">
-        <div className="container">
-          <div className="hero-content scroll-animation">
-            <span className="hero-tagline">Your Guide to Success</span>
-            <h1>How FreelancePro SL Works</h1>
-            <p>
-              Connecting talent with opportunity in Sierra Leone's premier freelance marketplace
-            </p>
-            <div className="hero-stats">
-              <div className="stat-item">
-                <span className="stat-number">1000+</span>
-                <span className="stat-label">Freelancers</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">500+</span>
-                <span className="stat-label">Clients</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">2500+</span>
-                <span className="stat-label">Projects</span>
+      <div className="hero-slider">
+        <div className="slides-container" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+          {slides.map((slide, index) => (
+            <div className="slide" key={slide.id}>
+              <div className="slide-image" style={{ backgroundImage: `url(${slide.image})` }}></div>
+              <div className="slide-overlay"></div>
+              <div className="container">
+                <div className="slide-content">
+                  <h1>{slide.title}</h1>
+                  <p>{slide.description}</p>
+                  <Link to="/register" className="btn btn-primary">{slide.ctaText}</Link>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
+        </div>
+        
+        <button className="slider-arrow slider-prev" onClick={prevSlide}>
+          <i className="fas fa-chevron-left"></i>
+        </button>
+        <button className="slider-arrow slider-next" onClick={nextSlide}>
+          <i className="fas fa-chevron-right"></i>
+        </button>
+        
+        <div className="slider-dots">
+          {slides.map((_, index) => (
+            <button 
+              key={index} 
+              className={`slider-dot ${index === currentSlide ? 'active' : ''}`}
+              onClick={() => goToSlide(index)}
+            ></button>
+          ))}
         </div>
       </div>
 
