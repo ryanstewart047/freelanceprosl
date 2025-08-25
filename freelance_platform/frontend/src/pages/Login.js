@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/auth';
 import '../styles/pages/Login.css';
-// Import login illustration
-import loginIllustration from '../assets/login-illustration.svg';
+// Import login image - using a placeholder URL for now
+// In production, you would import a local image or use a CDN-hosted image
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -63,10 +63,27 @@ const Login = () => {
         <div className="login-panel">
           <div className="login-welcome">
             <div className="welcome-content">
-              <h2>Welcome Back</h2>
-              <p>Connect with Sierra Leone's top talent and opportunities</p>
+              <h2>Your Success Starts Here</h2>
+              <p>Join Sierra Leone's premier freelance community. Connect with top clients, showcase your skills, and grow your career on FreelancePro SL.</p>
               <div className="welcome-image">
-                <img src={loginIllustration} alt="Login illustration" />
+                <img 
+                  src="https://img.freepik.com/free-photo/group-diverse-people-having-business-meeting_53876-25060.jpg" 
+                  alt="Professionals collaborating" 
+                />
+              </div>
+              <div className="welcome-benefits">
+                <div className="benefit-item">
+                  <i className="fas fa-check-circle"></i>
+                  <span>Find high-paying projects</span>
+                </div>
+                <div className="benefit-item">
+                  <i className="fas fa-check-circle"></i>
+                  <span>Build your professional network</span>
+                </div>
+                <div className="benefit-item">
+                  <i className="fas fa-check-circle"></i>
+                  <span>Secure payments for your work</span>
+                </div>
               </div>
             </div>
           </div>
