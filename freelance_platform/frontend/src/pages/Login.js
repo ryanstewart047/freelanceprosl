@@ -8,6 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,6 +39,12 @@ const Login = () => {
       localStorage.setItem('refreshToken', response.refresh_token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+      
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
@@ -50,23 +57,35 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <section className="login-section">
-        <div className="container">
-          <div className="auth-card">
-            <div className="auth-header">
-              <h1>Log In</h1>
-              <p>Welcome back! Log in to access your account</p>
+      <div className="login-container">
+        <div className="login-panel">
+          <div className="login-welcome">
+            <div className="welcome-content">
+              <h2>Welcome Back</h2>
+              <p>Connect with Sierra Leone's top talent and opportunities</p>
+              <div className="welcome-image"></div>
+            </div>
+          </div>
+          
+          <div className="login-form-container">
+            <div className="login-header">
+              <h1>Sign In</h1>
+              <p>Access your FreelancePro SL account</p>
             </div>
             
             {error && (
               <div className="alert alert-error">
-                {error}
+                <i className="fas fa-exclamation-circle"></i>
+                <span>{error}</span>
               </div>
             )}
             
-            <form onSubmit={handleSubmit} className="auth-form">
+            <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="email">
+                  <i className="fas fa-envelope"></i>
+                  <span>Email Address</span>
+                </label>
                 <input
                   type="email"
                   id="email"
@@ -74,24 +93,36 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
                   disabled={loading}
+                  className={error && !email ? 'error' : ''}
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  disabled={loading}
-                />
+                <label htmlFor="password">
+                  <i className="fas fa-lock"></i>
+                  <span>Password</span>
+                </label>
+                <div className="password-input-wrapper">
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    disabled={loading}
+                    className={error && !password ? 'error' : ''}
+                  />
+                </div>
               </div>
               
-              <div className="form-footer">
+              <div className="form-options">
                 <div className="remember-me">
-                  <input type="checkbox" id="remember" />
+                  <input 
+                    type="checkbox" 
+                    id="remember" 
+                    checked={rememberMe}
+                    onChange={() => setRememberMe(!rememberMe)}
+                  />
                   <label htmlFor="remember">Remember me</label>
                 </div>
                 
@@ -102,35 +133,49 @@ const Login = () => {
               
               <button 
                 type="submit" 
-                className="btn btn-primary btn-block"
+                className="btn-login"
                 disabled={loading}
               >
-                {loading ? 'Logging in...' : 'Log In'}
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-sign-in-alt"></i>
+                    <span>Sign In</span>
+                  </>
+                )}
               </button>
             </form>
             
-            <div className="auth-separator">
-              <span>OR</span>
+            <div className="login-separator">
+              <span>or continue with</span>
             </div>
             
             <div className="social-login">
-              <button className="btn btn-google">
-                <i className="fab fa-google"></i> Continue with Google
+              <button className="btn-social btn-google">
+                <i className="fab fa-google"></i>
               </button>
               
-              <button className="btn btn-facebook">
-                <i className="fab fa-facebook-f"></i> Continue with Facebook
+              <button className="btn-social btn-facebook">
+                <i className="fab fa-facebook-f"></i>
+              </button>
+              
+              <button className="btn-social btn-linkedin">
+                <i className="fab fa-linkedin-in"></i>
               </button>
             </div>
             
-            <div className="auth-footer">
+            <div className="login-footer">
               <p>
-                Don't have an account? <Link to="/register">Sign Up</Link>
+                Don't have an account? <Link to="/register">Create Account</Link>
               </p>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 };
