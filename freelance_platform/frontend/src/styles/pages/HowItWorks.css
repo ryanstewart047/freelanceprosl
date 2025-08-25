@@ -514,8 +514,6 @@
     flex-direction: column;
     gap: 15px;
   }
-};
-  z-index: 2;
 }
 
 .slide-content {
