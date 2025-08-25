@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/pages/HowItWorks.css';
+import LearnMoreSlider from '../components/LearnMoreSlider';
 
 const HowItWorks = () => {
   useEffect(() => {
@@ -29,27 +30,28 @@ const HowItWorks = () => {
 
   return (
     <div className="how-it-works-page">
-      <div className="hero-section">
-        <div className="container">
-          <div className="hero-content scroll-animation">
-            <span className="hero-tagline">Your Guide to Success</span>
-            <h1>How FreelancePro SL Works</h1>
-            <p>
-              Connecting talent with opportunity in Sierra Leone's premier freelance marketplace
-            </p>
-            <div className="hero-stats">
-              <div className="stat-item">
-                <span className="stat-number">1000+</span>
-                <span className="stat-label">Freelancers</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">500+</span>
-                <span className="stat-label">Clients</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">2500+</span>
-                <span className="stat-label">Projects</span>
-              </div>
+      {/* Custom Learn More Slider */}
+      <LearnMoreSlider />
+      
+      {/* Stats section now moved below the slider */}
+      <div className="container stats-container scroll-animation">
+        <div className="stats-wrapper">
+          <div className="stats-header">
+            <h2>Platform Statistics</h2>
+            <p>Growing community of professionals in Sierra Leone</p>
+          </div>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <span className="stat-number">1000+</span>
+              <span className="stat-label">Freelancers</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">500+</span>
+              <span className="stat-label">Clients</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">2500+</span>
+              <span className="stat-label">Projects</span>
             </div>
           </div>
         </div>
