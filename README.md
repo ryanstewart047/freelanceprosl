@@ -39,8 +39,8 @@ A modern, full-featured freelance platform connecting clients with talented prof
 
 1. Clone the repository
 ```
-git clone https://github.com/yourusername/freelance-web-application.git
-cd freelance-web-application
+git clone https://github.com/ryanstewart047/freelanceprosl.git
+cd freelanceprosl
 ```
 
 2. Set up the backend

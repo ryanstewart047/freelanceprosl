@@ -21,11 +21,17 @@
   text-decoration: none;
 }
 
-.logo h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 0;
+.logo img {
+  height: 40px;
+  max-width: 100%;
+}
+
+.logo .mobile-logo {
+  display: none;
+}
+
+.logo .desktop-logo {
+  display: block;
 }
 
 .main-nav ul {
@@ -189,6 +195,15 @@
   
   .mobile-menu-button.active span:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -7px);
+  }
+  
+  .logo .desktop-logo {
+    display: none;
+  }
+  
+  .logo .mobile-logo {
+    display: block;
+    height: 35px;
   }
   
   .header-content {

@@ -51,7 +51,8 @@ const Header = () => {
         <div className="header-content">
           <div className="logo">
             <Link to="/">
-              <h1>FreelancePro <span>SL</span></h1>
+              <img src="/freelanceprosl/images/logo.svg" alt="FreelancePro SL Logo" className="desktop-logo" />
+              <img src="/freelanceprosl/images/logo-mobile.svg" alt="FreelancePro SL Logo" className="mobile-logo" />
             </Link>
           </div>
 
