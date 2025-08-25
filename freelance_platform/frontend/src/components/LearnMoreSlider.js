@@ -26,7 +26,7 @@ const LearnMoreSlider = () => {
       description: "Together we're building a digital economy that creates opportunities for talented professionals.",
       buttonText: "Get Started",
       buttonLink: "/register",
-      image: "https://images.unsplash.com/photo-1533750446969-255b5ba0e556?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+      image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
     }
   ];
   
