@@ -4,8 +4,8 @@
 }
 
 .privacy-page .hero-section {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: var(--white);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: var(--text-white);
   padding: 60px 0;
   text-align: center;
   margin-bottom: 40px;
@@ -14,11 +14,13 @@
 .privacy-page .hero-section h1 {
   font-size: 2.5rem;
   margin-bottom: 15px;
+  color: var(--bg-white);
 }
 
 .privacy-page .hero-section p {
   font-size: 1.1rem;
   opacity: 0.9;
+  color: var(--bg-white);
 }
 
 .privacy-content {
@@ -28,7 +30,7 @@
 }
 
 .table-of-contents {
-  background-color: var(--white);
+  background-color: var(--bg-white);
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
@@ -40,7 +42,7 @@
 .table-of-contents h2 {
   font-size: 1.3rem;
   margin-bottom: 20px;
-  color: var(--primary);
+  color: var(--primary-color);
 }
 
 .table-of-contents ul {
