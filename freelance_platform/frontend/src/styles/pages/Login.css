@@ -55,12 +55,16 @@
 }
 
 .welcome-image {
-  background-image: url('../../../public/images/login-illustration.svg');
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 250px;
   margin-top: 2rem;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.welcome-image img {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* Form section (right side) */

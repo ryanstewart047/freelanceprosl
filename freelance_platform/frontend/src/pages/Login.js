@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/auth';
 import '../styles/pages/Login.css';
+// Import login illustration
+import loginIllustration from '../assets/login-illustration.svg';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -63,7 +65,9 @@ const Login = () => {
             <div className="welcome-content">
               <h2>Welcome Back</h2>
               <p>Connect with Sierra Leone's top talent and opportunities</p>
-              <div className="welcome-image"></div>
+              <div className="welcome-image">
+                <img src={loginIllustration} alt="Login illustration" />
+              </div>
             </div>
           </div>
           
