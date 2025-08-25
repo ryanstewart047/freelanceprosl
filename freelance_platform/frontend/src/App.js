@@ -6,6 +6,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import PopupBanner from './components/PopupBanner';
 import DarkModeToggle from './components/DarkModeToggle';
+import BackToTop from './components/BackToTop';
 
 // Pages
 import Homepage from './pages/Homepage';
@@ -71,6 +72,7 @@ const App = () => {
         </main>
         <Footer />
         {showPopup && <PopupBanner onClose={closePopup} />}
+        <BackToTop />
       </div>
     </Router>
   );
