@@ -316,3 +316,41 @@
     font-size: 0.85rem;
   }
 }
+
+/* Mobile auth buttons that appear in the mobile menu */
+.mobile-auth-buttons {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .mobile-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .mobile-auth-buttons .btn {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+  }
+  
+  /* Hide desktop auth buttons when menu is active */
+  .main-nav.active ~ .auth-buttons {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .auth-buttons {
+    display: none; /* Always hide the top auth buttons on mobile */
+  }
+  
+  .mobile-auth-buttons {
+    display: flex;
+  }
+}

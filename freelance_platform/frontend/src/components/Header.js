@@ -62,6 +62,12 @@ const Header = () => {
               <li><Link to="/freelancers" onClick={closeMenu}>Freelancers</Link></li>
               <li><Link to="/about" onClick={closeMenu}>About Us</Link></li>
               <li><Link to="/contact" onClick={closeMenu}>Contact</Link></li>
+              {!user && (
+                <li className="mobile-auth-buttons">
+                  <Link to="/login" className="btn btn-secondary" onClick={closeMenu}>Login</Link>
+                  <Link to="/register" className="btn btn-primary" onClick={closeMenu}>Sign Up</Link>
+                </li>
+              )}
             </ul>
           </nav>
 
