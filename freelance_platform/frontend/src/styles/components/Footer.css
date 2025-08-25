@@ -80,23 +80,24 @@
 }
 
 .contact-input {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   padding: 0.75rem;
   margin-bottom: 0.75rem;
-  color: white;
+  color: #333333;
   border-radius: var(--border-radius-md);
+  font-weight: 500;
 }
 
 .contact-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .contact-input:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+  background-color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 31, 63, 0.2);
 }
 
 textarea.contact-input {
@@ -104,6 +105,7 @@ textarea.contact-input {
   min-height: 100px;
   font-family: var(--body-font);
   line-height: 1.5;
+  font-size: 0.95rem;
 }
 
 .contact-form .btn {
