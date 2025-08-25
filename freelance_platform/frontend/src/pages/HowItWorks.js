@@ -94,14 +94,14 @@ const HowItWorks = () => {
           ))}
         </div>
         
-        <button className="slider-arrow slider-prev" onClick={prevSlide}>
+        <button className="slider-arrow prev" onClick={prevSlide}>
           <i className="fas fa-chevron-left"></i>
         </button>
-        <button className="slider-arrow slider-next" onClick={nextSlide}>
+        <button className="slider-arrow next" onClick={nextSlide}>
           <i className="fas fa-chevron-right"></i>
         </button>
         
-        <div className="slider-dots">
+        <div className="slider-nav">
           {slides.map((_, index) => (
             <button 
               key={index} 
