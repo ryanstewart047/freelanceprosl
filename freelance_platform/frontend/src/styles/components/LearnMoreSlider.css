@@ -286,11 +286,7 @@
   }
   
   .learn-slider-progress {
-    bottom: 20px;
-  }
-  
-  .learn-progress-line {
-    width: 20px;
+    display: none;
   }
 }
 
