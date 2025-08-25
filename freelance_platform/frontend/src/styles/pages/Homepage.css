@@ -78,6 +78,7 @@
   align-items: center;
   justify-content: center;
   animation: slideInFromRight 1s ease-out;
+  margin-left: var(--spacing-md);
 }
 
 .slide-image img {
