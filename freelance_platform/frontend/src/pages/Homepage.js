@@ -1,22 +1,97 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/pages/Homepage.css';
 
 const Homepage = () => {
+  const [activeSlide, setActiveSlide] = useState(0);
+  
+  // Slider data
+  const sliderData = [
+    {
+      title: "Find the perfect freelance services",
+      description: "Connect with top talent from Sierra Leone to get your projects done professionally and affordably.",
+      buttonText: "Find Talent",
+      buttonLink: "/marketplace",
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+    },
+    {
+      title: "Grow your freelance career",
+      description: "Discover opportunities to showcase your skills and earn income on your own terms.",
+      buttonText: "Find Work",
+      buttonLink: "/freelancers",
+      image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+    },
+    {
+      title: "Secure payments, quality work",
+      description: "Our platform ensures secure transactions and connects you with verified professionals.",
+      buttonText: "Get Started",
+      buttonLink: "/register",
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+    }
+  ];
+  
+  // Auto-advance slider
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prevSlide) => (prevSlide + 1) % sliderData.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [sliderData.length]);
+  
+  // Manual navigation
+  const goToSlide = (index) => {
+    setActiveSlide(index);
+  };
+  
+  const nextSlide = () => {
+    setActiveSlide((prevSlide) => (prevSlide + 1) % sliderData.length);
+  };
+  
+  const prevSlide = () => {
+    setActiveSlide((prevSlide) => (prevSlide - 1 + sliderData.length) % sliderData.length);
+  };
+
   return (
     <div className="homepage">
-      {/* Hero Section */}
-      <section className="homepage-hero">
-        <div className="container">
-          <h1>Find the perfect <span className="highlight">freelance</span> service</h1>
-          <p>Connect with talented professionals to grow your business or start your freelance career today</p>
-          <div className="hero-actions">
-            <Link to="/marketplace" className="btn btn-primary btn-lg">
-              <i className="fas fa-search"></i> Find Work
-            </Link>
-            <Link to="/post-job" className="btn btn-secondary btn-lg">
-              <i className="fas fa-plus-circle"></i> Post a Job
-            </Link>
+      {/* Hero Slider Section */}
+      <section className="hero-slider">
+        <div className="slider-container">
+          {sliderData.map((slide, index) => (
+            <div 
+              key={index} 
+              className={`slide ${index === activeSlide ? 'active' : ''}`}
+            >
+              <div className="slide-content">
+                <div className="slide-text">
+                  <h1>{slide.title}</h1>
+                  <p>{slide.description}</p>
+                  <Link to={slide.buttonLink} className="btn btn-primary btn-lg">
+                    {slide.buttonText}
+                  </Link>
+                </div>
+                <div className="slide-image">
+                  <img src={slide.image} alt={`Slide ${index + 1}`} />
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          <button className="slider-arrow prev" onClick={prevSlide}>
+            <i className="fas fa-chevron-left"></i>
+          </button>
+          <button className="slider-arrow next" onClick={nextSlide}>
+            <i className="fas fa-chevron-right"></i>
+          </button>
+          
+          <div className="slider-dots">
+            {sliderData.map((_, index) => (
+              <button 
+                key={index} 
+                className={`dot ${index === activeSlide ? 'active' : ''}`}
+                onClick={() => goToSlide(index)}
+              ></button>
+            ))}
           </div>
         </div>
       </section>
