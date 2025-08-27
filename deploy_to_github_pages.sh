@@ -6,7 +6,7 @@ echo "🚀 Starting GitHub Pages deployment process..."
 CURRENT_DIR=$(pwd)
 CURRENT_BRANCH=$(git branch --show-current)
 REPO_ROOT=$(git rev-parse --show-toplevel)
-BUILD_DIR="$REPO_ROOT/freelance_platform"
+BUILD_DIR="$REPO_ROOT"
 TEMP_DIR="/tmp/gh-pages-$(date +%s)"
 
 echo "📋 Creating temporary directory at $TEMP_DIR..."
