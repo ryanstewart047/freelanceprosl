@@ -398,7 +398,7 @@
 .testimonial-content p {
   font-style: italic;
   line-height: 1.7;
-  color: var(--text);
+  color: var(--text-color);
   margin-top: 20px;
 }
 
@@ -499,7 +499,7 @@
 }
 
 [data-theme="dark"] .testimonial-content p {
-  color: var(--text-light);
+  color: var(--dark-text-primary);
 }
 
 [data-theme="dark"] .section-content h2,

@@ -86,7 +86,7 @@
 
 .popup-content p {
   margin-bottom: 1.5rem;
-  color: var(--text-light);
+  color: var(--text-color);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -357,7 +357,7 @@
 .popup-content p {
   margin-bottom: 15px;
   line-height: 1.6;
-  color: var(--text-dark);
+  color: var(--text-color);
   font-size: 1.05rem;
 }
 
@@ -478,7 +478,7 @@
 
 [data-theme="dark"] .popup-content p,
 [data-theme="dark"] .popup-close {
-  color: var(--text-dark);
+  color: var(--dark-text-primary);
 }
 
 [data-theme="dark"] .popup-contact {

@@ -905,11 +905,11 @@
 }
 
 [data-theme="dark"] .testimonial-content {
-  color: var(--text-light);
+  color: var(--dark-text-primary);
 }
 
 [data-theme="dark"] .testimonial-author {
-  color: var(--text-light);
+  color: var(--dark-text-primary);
 }
 
 .testimonial-cards {
@@ -938,7 +938,7 @@
 .testimonial-content {
   flex: 1;
   font-style: italic;
-  color: var(--text-dark);
+  color: var(--text-color);
   margin-bottom: var(--spacing-md);
   position: relative;
   padding-top: var(--spacing-md);
