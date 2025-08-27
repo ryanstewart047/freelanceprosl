@@ -1,0 +1,23 @@
+{
+  "name": "freelance-platform-backend",
+  "version": "1.0.0",
+  "description": "Backend for the Freelance Platform application",
+  "main": "app.py",
+  "scripts": {
+    "start": "flask run",
+    "dev": "flask run --debug",
+    "init-db": "flask db init",
+    "migrate": "flask db migrate",
+    "upgrade": "flask db upgrade",
+    "test": "pytest"
+  },
+  "keywords": [
+    "flask",
+    "python",
+    "rest-api",
+    "freelance",
+    "marketplace"
+  ],
+  "author": "",
+  "license": "MIT"
+}
