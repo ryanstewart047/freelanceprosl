@@ -494,9 +494,12 @@
 
 [data-theme="dark"] .section-content p,
 [data-theme="dark"] .value-card p,
-[data-theme="dark"] .team-bio,
+[data-theme="dark"] .team-bio {
+  color: var(--text-light);
+}
+
 [data-theme="dark"] .testimonial-content p {
-  color: var(--text-dark);
+  color: var(--text-light);
 }
 
 [data-theme="dark"] .section-content h2,

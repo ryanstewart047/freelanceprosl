@@ -904,6 +904,14 @@
   background-color: var(--bg-dark);
 }
 
+[data-theme="dark"] .testimonial-content {
+  color: var(--text-light);
+}
+
+[data-theme="dark"] .testimonial-author {
+  color: var(--text-light);
+}
+
 .testimonial-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
