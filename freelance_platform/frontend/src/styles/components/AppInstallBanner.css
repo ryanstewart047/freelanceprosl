@@ -13,13 +13,6 @@
   animation: slideUpBanner 0.3s ease-out;
 }
 
-/* Hide on desktop */
-@media (min-width: 1024px) {
-  .app-install-banner {
-    display: none;
-  }
-}
-
 [data-theme="dark"] .app-install-banner {
   background-color: var(--bg-dark);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
@@ -87,18 +80,23 @@
   background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  margin-right: 10px;
+  margin-right: 12px;
   position: relative;
-  min-width: 100px;
+  min-width: 110px;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.app-install-button:hover {
+  background-color: #00152a;
 }
 
 .app-install-button:active {
