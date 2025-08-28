@@ -30,8 +30,8 @@ const AppInstallBanner = () => {
     // Check if banner was dismissed before
     const bannerDismissed = localStorage.getItem('appBannerDismissed');
     
-    // Show after 5 seconds on all devices that aren't in standalone mode
-    if (!isStandalone && !bannerDismissed) {
+    // Show after 5 seconds ONLY on mobile devices that aren't in standalone mode
+    if (isMobile && !isStandalone && !bannerDismissed) {
       const timer = setTimeout(() => {
         setShowBanner(true);
       }, 5000);
@@ -66,7 +66,7 @@ const AppInstallBanner = () => {
     };
   }, []);
   
-  const handleInstall = () => {
+  const handleInstall = async () => {
     if (!installPromptEvent) {
       console.log('No install prompt event captured');
       // Show manual instructions if no install prompt event
@@ -82,14 +82,24 @@ const AppInstallBanner = () => {
     // Set installing state to show progress
     setInstalling(true);
     
-    // Show the install prompt
-    installPromptEvent.prompt();
-    
-    // Wait for the user to respond to the prompt
-    installPromptEvent.userChoice.then((choiceResult) => {
+    try {
+      // Show the install prompt
+      const promptResult = await installPromptEvent.prompt();
+      
+      // Wait for the user to respond to the prompt
+      const choiceResult = await installPromptEvent.userChoice;
+      
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
         // The appinstalled event will handle success
+        setInstallStatus('success');
+        // Give user visual feedback while waiting for appinstalled event
+        setTimeout(() => {
+          if (installing) {
+            setInstallStatus('success');
+            setInstalling(false);
+          }
+        }, 5000);
       } else {
         console.log('User dismissed the install prompt');
         setInstalling(false);
@@ -101,7 +111,14 @@ const AppInstallBanner = () => {
       }
       // Clear the stored prompt event
       setInstallPromptEvent(null);
-    });
+    } catch (error) {
+      console.error('Install prompt error:', error);
+      setInstalling(false);
+      setInstallStatus('failed');
+      setTimeout(() => {
+        setInstallStatus(null);
+      }, 3000);
+    }
   };
   
   const handleDismiss = () => {
@@ -114,9 +131,10 @@ const AppInstallBanner = () => {
   return (
     <div className="app-install-banner">
       <div className="app-install-content">
-        <img src={`${process.env.PUBLIC_URL}/images/favicon.svg`} alt="FreelancePro SL" className="app-banner-icon" />
+        <img src={`${process.env.PUBLIC_URL}/images/icon-192.png`} alt="FreelancePro SL" className="app-banner-icon" />
         <div className="app-banner-text">
-          <p>Install our app for a better experience</p>
+          <p>Install FreelancePro SL app</p>
+          {installing && <p className="install-status in-progress">Installing app...</p>}
           {installStatus === 'success' && <p className="install-status success">Installation successful!</p>}
           {installStatus === 'failed' && <p className="install-status failed">Installation cancelled</p>}
         </div>
@@ -127,10 +145,10 @@ const AppInstallBanner = () => {
           onClick={handleInstall}
           disabled={installing}
         >
-          {installing ? 'Installing...' : 'Install'}
+          {installing ? 'Installing...' : 'Install Now'}
           {installing && <span className="loading-spinner"></span>}
         </button>
-        <button className="app-dismiss-button" onClick={handleDismiss}>
+        <button className="app-dismiss-button" onClick={handleDismiss} aria-label="Dismiss">
           <span className="dismiss-icon">×</span>
         </button>
       </div>
