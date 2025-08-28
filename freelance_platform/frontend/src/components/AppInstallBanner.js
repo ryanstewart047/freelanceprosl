@@ -24,13 +24,14 @@ const AppInstallBanner = () => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     // Don't show if already in standalone mode
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         navigator.standalone === true;
     
     // Check if banner was dismissed before
     const bannerDismissed = localStorage.getItem('appBannerDismissed');
     
-    // Show after 5 seconds on mobile devices that aren't in standalone mode
-    if (isMobile && !isStandalone && !bannerDismissed) {
+    // Show after 5 seconds on all devices that aren't in standalone mode
+    if (!isStandalone && !bannerDismissed) {
       const timer = setTimeout(() => {
         setShowBanner(true);
       }, 5000);
@@ -68,6 +69,13 @@ const AppInstallBanner = () => {
   const handleInstall = () => {
     if (!installPromptEvent) {
       console.log('No install prompt event captured');
+      // Show manual instructions if no install prompt event
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        alert('To install on iOS: tap the share icon and select "Add to Home Screen"');
+      } else {
+        alert('To install: open browser menu and select "Install app" or "Add to Home screen"');
+      }
       return;
     }
     
@@ -106,7 +114,7 @@ const AppInstallBanner = () => {
   return (
     <div className="app-install-banner">
       <div className="app-install-content">
-        <img src="images/favicon.svg" alt="FreelancePro SL" className="app-banner-icon" />
+        <img src={`${process.env.PUBLIC_URL}/images/favicon.svg`} alt="FreelancePro SL" className="app-banner-icon" />
         <div className="app-banner-text">
           <p>Install our app for a better experience</p>
           {installStatus === 'success' && <p className="install-status success">Installation successful!</p>}
@@ -117,7 +125,7 @@ const AppInstallBanner = () => {
         <button 
           className={`app-install-button ${installing ? 'installing' : ''}`} 
           onClick={handleInstall}
-          disabled={installing || !installPromptEvent}
+          disabled={installing}
         >
           {installing ? 'Installing...' : 'Install'}
           {installing && <span className="loading-spinner"></span>}
