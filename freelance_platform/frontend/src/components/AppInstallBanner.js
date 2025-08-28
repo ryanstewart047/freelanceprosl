@@ -84,7 +84,7 @@ const AppInstallBanner = () => {
     
     try {
       // Show the install prompt
-      const promptResult = await installPromptEvent.prompt();
+      await installPromptEvent.prompt();
       
       // Wait for the user to respond to the prompt
       const choiceResult = await installPromptEvent.userChoice;
