@@ -10,7 +10,7 @@
       name="description"
       content="FreelancePro SL - Connect with Sierra Leone's top talent for freelance services"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/images/favicon.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/images/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="FreelancePro SL">
@@ -50,18 +50,38 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
+      // Global error handler to catch uncaught errors
+      window.addEventListener('error', function(event) {
+        console.error('Global error caught:', event.error);
+        // Display error message on white screen
+        if (document.body.innerHTML === '') {
+          document.body.innerHTML = '<div style="padding: 20px; font-family: Arial, sans-serif;"><h2>An error occurred</h2><p>Please try refreshing the page. If the problem persists, clear your browser cache.</p><pre style="background: #f5f5f5; padding: 10px; overflow: auto;">' + 
+          (event.error ? event.error.toString() : 'Unknown error') + '</pre></div>';
+        }
+      });
+      
       // Register service worker for PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          const swUrl = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/service-worker.js`;
-          navigator.serviceWorker.register(swUrl)
-            .then(registration => {
-              console.log('Service Worker registered: ', registration);
-            })
-            .catch(registrationError => {
-              console.log('Service Worker registration failed: ', registrationError);
-            });
+          try {
+            const baseUrl = window.location.pathname.includes('/freelanceprosl') 
+              ? '/freelanceprosl' 
+              : '';
+            const swUrl = `${window.location.origin}${baseUrl}/service-worker.js`;
+            console.log('Attempting to register service worker at:', swUrl);
+            navigator.serviceWorker.register(swUrl)
+              .then(registration => {
+                console.log('Service Worker registered: ', registration);
+              })
+              .catch(registrationError => {
+                console.log('Service Worker registration failed: ', registrationError);
+              });
+          } catch (error) {
+            console.error('Service worker registration error:', error);
+          }
         });
+      } else {
+        console.log('Service workers are not supported in this browser');
       }
     </script>
   </body>

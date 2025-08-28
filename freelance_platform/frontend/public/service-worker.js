@@ -1,7 +1,11 @@
 // Service Worker for FreelancePro SL PWA
-const CACHE_NAME = 'freelance-pro-sl-v2';
-const BASE_PATH = location.pathname.replace(/\/service-worker\.js$/, '');
+const CACHE_NAME = 'freelance-pro-sl-v4';
+// Use self.location instead of location
+const BASE_PATH = self.location.pathname.includes('/freelanceprosl') 
+  ? '/freelanceprosl' 
+  : '';
 
+// Use fixed paths
 const urlsToCache = [
   `${BASE_PATH}/`,
   `${BASE_PATH}/index.html`,
@@ -30,6 +34,22 @@ self.addEventListener('install', event => {
 
 // Cache and return requests
 self.addEventListener('fetch', event => {
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+  
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Don't cache API calls or service worker
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('/service-worker.js')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -37,7 +57,11 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        return fetch(event.request)
+
+        // Clone the request
+        const fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest)
           .then(response => {
             // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {

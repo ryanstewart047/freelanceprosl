@@ -3,23 +3,23 @@
   "name": "FreelancePro SL - Connect with Sierra Leone's top talent",
   "icons": [
     {
-      "src": "images/favicon.svg",
+      "src": "/freelanceprosl/images/favicon.svg",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/svg+xml"
     },
     {
-      "src": "images/favicon.png",
+      "src": "/freelanceprosl/images/favicon.png",
       "type": "image/png",
       "sizes": "32x32"
     },
     {
-      "src": "images/icon-192.png",
+      "src": "/freelanceprosl/images/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "images/icon-512.png",
+      "src": "/freelanceprosl/images/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
