@@ -11,10 +11,26 @@
       "src": "images/favicon.png",
       "type": "image/png",
       "sizes": "32x32"
+    },
+    {
+      "src": "images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0A2342",
-  "background_color": "#ffffff"
+  "theme_color": "#001F3F",
+  "background_color": "#ffffff",
+  "scope": "/",
+  "description": "Connect with Sierra Leone's top freelance talent and find quality jobs",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
 }
