@@ -37,8 +37,30 @@
   font-weight: 500;
 }
 
+.install-status {
+  font-size: 12px !important;
+  margin-top: 4px !important;
+  font-weight: normal !important;
+}
+
+.install-status.success {
+  color: #4CAF50 !important;
+}
+
+.install-status.failed {
+  color: #F44336 !important;
+}
+
 [data-theme="dark"] .app-banner-text p {
   color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .install-status.success {
+  color: #81C784 !important;
+}
+
+[data-theme="dark"] .install-status.failed {
+  color: #E57373 !important;
 }
 
 .app-install-actions {
@@ -56,6 +78,35 @@
   font-weight: 500;
   cursor: pointer;
   margin-right: 10px;
+  position: relative;
+  min-width: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-install-button.installing {
+  background-color: #6c8fb8;
+}
+
+.app-install-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .app-dismiss-button {

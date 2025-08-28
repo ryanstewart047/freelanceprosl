@@ -5,6 +5,8 @@ const InstallPrompt = () => {
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [showManualPrompt, setShowManualPrompt] = useState(false);
+  const [installing, setInstalling] = useState(false);
+  const [installStatus, setInstallStatus] = useState(null); // 'success', 'failed', or null
 
   useEffect(() => {
     // Show manual install prompt after 20 seconds if no automatic one is triggered
@@ -43,8 +45,30 @@ const InstallPrompt = () => {
     };
   }, [showPrompt]);
 
+  // Add event listener for appinstalled event
+  useEffect(() => {
+    const handleAppInstalled = () => {
+      console.log('App was successfully installed');
+      setInstalling(false);
+      setInstallStatus('success');
+      // Hide prompt after successful installation after a delay
+      setTimeout(() => {
+        setShowPrompt(false);
+      }, 3000);
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    return () => {
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
   const handleInstallClick = () => {
     if (!installPromptEvent) return;
+
+    // Set installing state to show progress
+    setInstalling(true);
 
     // Show the native install prompt
     installPromptEvent.prompt();
@@ -53,13 +77,18 @@ const InstallPrompt = () => {
     installPromptEvent.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
+        // The appinstalled event will handle success
       } else {
         console.log('User dismissed the install prompt');
+        setInstalling(false);
+        setInstallStatus('failed');
+        // Reset status after 3 seconds
+        setTimeout(() => {
+          setInstallStatus(null);
+        }, 3000);
       }
       // Clear the stored prompt event
       setInstallPromptEvent(null);
-      // Hide our custom prompt
-      setShowPrompt(false);
     });
   };
 
@@ -134,9 +163,18 @@ const InstallPrompt = () => {
         ) : installPromptEvent ? (
           <div>
             <p>Install this app on your device for quick and easy access when you're on the go!</p>
+            {installStatus === 'success' && <p className="install-status success">Installation successful!</p>}
+            {installStatus === 'failed' && <p className="install-status failed">Installation cancelled</p>}
             <div className="install-buttons">
-              <button className="install-later" onClick={handleCloseClick}>Maybe Later</button>
-              <button className="install-now" onClick={handleInstallClick}>Install Now</button>
+              <button className="install-later" onClick={handleCloseClick} disabled={installing}>Maybe Later</button>
+              <button 
+                className={`install-now ${installing ? 'installing' : ''}`} 
+                onClick={handleInstallClick}
+                disabled={installing}
+              >
+                {installing ? 'Installing...' : 'Install Now'}
+                {installing && <span className="loading-spinner"></span>}
+              </button>
             </div>
           </div>
         ) : (
