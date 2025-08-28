@@ -1,17 +1,18 @@
 // Service Worker for FreelancePro SL PWA
-const CACHE_NAME = 'freelance-pro-sl-v1';
+const CACHE_NAME = 'freelance-pro-sl-v2';
+const BASE_PATH = location.pathname.replace(/\/service-worker\.js$/, '');
+
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/images/favicon.svg',
-  '/images/favicon.png',
-  '/images/logo.svg',
-  '/images/logo-mobile.svg',
-  '/images/hero-illustration.svg',
-  '/static/css/main.chunk.css',
-  '/static/js/main.chunk.js',
-  '/static/js/bundle.js'
+  `${BASE_PATH}/`,
+  `${BASE_PATH}/index.html`,
+  `${BASE_PATH}/manifest.json`,
+  `${BASE_PATH}/images/favicon.svg`,
+  `${BASE_PATH}/images/favicon.png`,
+  `${BASE_PATH}/images/icon-192.png`,
+  `${BASE_PATH}/images/icon-512.png`,
+  `${BASE_PATH}/images/logo.svg`,
+  `${BASE_PATH}/images/logo-mobile.svg`,
+  `${BASE_PATH}/images/hero-illustration.svg`
 ];
 
 // Install a service worker

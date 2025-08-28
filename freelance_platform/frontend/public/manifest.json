@@ -25,12 +25,14 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "id": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#001F3F",
   "background_color": "#ffffff",
-  "scope": "/",
+  "scope": "./",
   "description": "Connect with Sierra Leone's top freelance talent and find quality jobs",
   "orientation": "portrait-primary",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "categories": ["business", "productivity", "social"]
 }

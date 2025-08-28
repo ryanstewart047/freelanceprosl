@@ -9,6 +9,7 @@ import DarkModeToggle from './components/DarkModeToggle';
 import BackToTop from './components/BackToTop';
 import CookieConsent from './components/CookieConsent';
 import InstallPrompt from './components/InstallPrompt';
+import AppInstallBanner from './components/AppInstallBanner';
 
 // Pages
 import Homepage from './pages/Homepage';
@@ -83,6 +84,7 @@ const App = () => {
         <BackToTop />
         <CookieConsent />
         <InstallPrompt />
+        <AppInstallBanner />
       </div>
     </Router>
   );

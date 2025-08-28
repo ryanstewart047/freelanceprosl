@@ -53,7 +53,8 @@
       // Register service worker for PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
+          const swUrl = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/service-worker.js`;
+          navigator.serviceWorker.register(swUrl)
             .then(registration => {
               console.log('Service Worker registered: ', registration);
             })

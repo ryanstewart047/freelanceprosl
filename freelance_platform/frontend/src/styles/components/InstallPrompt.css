@@ -126,6 +126,32 @@
   background-color: var(--bg-darker);
 }
 
+/* iOS share icon */
+.ios-share-icon {
+  display: inline-block;
+  font-size: 20px;
+  margin: 0 3px;
+  vertical-align: middle;
+}
+
+/* Installation instructions list */
+.install-instructions {
+  text-align: left;
+  margin: 0 0 20px;
+  padding-left: 20px;
+  color: var(--text-color);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .install-instructions {
+  color: var(--dark-text-primary);
+}
+
+.install-instructions li {
+  margin-bottom: 8px;
+}
+
 @keyframes slideUp {
   from {
     transform: translate(-50%, 100%);
@@ -167,6 +193,10 @@
   
   .install-later, .install-now {
     padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .install-instructions {
     font-size: 13px;
   }
 }
