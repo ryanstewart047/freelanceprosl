@@ -1,6 +1,6 @@
 // Service Worker for FreelancePro SL PWA
-const CACHE_NAME = 'freelance-pro-sl-v3';
-const BASE_PATH = self.location.pathname.replace(/\/service-worker\.js$/, '');
+const CACHE_NAME = 'freelance-pro-sl-v2';
+const BASE_PATH = location.pathname.replace(/\/service-worker\.js$/, '');
 
 const urlsToCache = [
   `${BASE_PATH}/`,
@@ -12,9 +12,7 @@ const urlsToCache = [
   `${BASE_PATH}/images/icon-512.png`,
   `${BASE_PATH}/images/logo.svg`,
   `${BASE_PATH}/images/logo-mobile.svg`,
-  `${BASE_PATH}/images/hero-illustration.svg`,
-  `${BASE_PATH}/static/css/main.*.css`,
-  `${BASE_PATH}/static/js/main.*.js`
+  `${BASE_PATH}/images/hero-illustration.svg`
 ];
 
 // Install a service worker
@@ -97,6 +95,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('https://ryanstewart047.github.io/freelanceprosl')
+    clients.openWindow('https://freelanceprosl.github.io')
   );
 });
