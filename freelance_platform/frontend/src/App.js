@@ -8,6 +8,7 @@ import PopupBanner from './components/PopupBanner';
 import DarkModeToggle from './components/DarkModeToggle';
 import BackToTop from './components/BackToTop';
 import CookieConsent from './components/CookieConsent';
+import InstallPrompt from './components/InstallPrompt';
 
 // Pages
 import Homepage from './pages/Homepage';
@@ -81,6 +82,7 @@ const App = () => {
         {showPopup && <PopupBanner onClose={closePopup} />}
         <BackToTop />
         <CookieConsent />
+        <InstallPrompt />
       </div>
     </Router>
   );
