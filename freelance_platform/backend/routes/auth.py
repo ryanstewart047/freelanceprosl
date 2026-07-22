@@ -1,9 +1,11 @@
 from flask import request, jsonify
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash
+from datetime import datetime, timedelta
 
 from routes import auth_bp
-from models import db, User, UserRole
+from models import db, User, UserRole, generate_tracking_id
+from services.email_service import EmailService
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -24,25 +26,42 @@ def register():
     
     # Create new user
     try:
+        tracking_id = generate_tracking_id()
         user = User(
+            tracking_id=tracking_id,
             username=data['username'],
             email=data['email'],
+            contact_email=data.get('contact_email', data['email']),
             role=UserRole(data['role']),
             first_name=data.get('first_name', ''),
             last_name=data.get('last_name', ''),
-            phone_number=data.get('phone_number', '')
+            phone_number=data.get('phone_number', ''),
+            whatsapp_number=data.get('whatsapp_number', data.get('phone_number', '')),
+            title=data.get('title', ''),
+            location=data.get('location', ''),
+            hourly_rate=data.get('hourly_rate', 0.0),
+            pricing_type=data.get('pricing_type', 'hourly'),
+            trial_start_date=datetime.utcnow(),
+            trial_end_date=datetime.utcnow() + timedelta(days=30),
+            subscription_status='TRIAL'
         )
         user.set_password(data['password'])
         
         db.session.add(user)
         db.session.commit()
         
+        # Send confirmation email
+        try:
+            EmailService.send_welcome_email(user)
+        except Exception as mail_err:
+            print(f"Warning: Failed to send confirmation email: {mail_err}")
+        
         # Generate tokens
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
         
         return jsonify({
-            'message': 'User registered successfully',
+            'message': 'User registered successfully with 30-day free trial',
             'user': user.to_dict(),
             'access_token': access_token,
             'refresh_token': refresh_token
@@ -60,12 +79,23 @@ def login():
     if not data.get('username') or not data.get('password'):
         return jsonify({'error': 'Username and password are required'}), 400
     
-    # Find user by username
-    user = User.query.filter_by(username=data['username']).first()
+    # Find user by username or email
+    user = User.query.filter((User.username == data['username']) | (User.email == data['username'])).first()
     
     # Check if user exists and password is correct
     if not user or not user.check_password(data['password']):
         return jsonify({'error': 'Invalid username or password'}), 401
+    
+    # Check if user account is disabled or suspended
+    if user.is_disabled:
+        return jsonify({'error': 'Your account has been disabled by the administration.'}), 403
+    if user.is_suspended:
+        return jsonify({'error': 'Your account is currently suspended. Please contact support.'}), 403
+
+    # Ensure tracking_id exists
+    if not user.tracking_id:
+        user.tracking_id = generate_tracking_id()
+        db.session.commit()
     
     # Generate tokens
     access_token = create_access_token(identity=user.id)
@@ -77,6 +107,7 @@ def login():
         'access_token': access_token,
         'refresh_token': refresh_token
     }), 200
+
 
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)

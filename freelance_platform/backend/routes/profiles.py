@@ -12,6 +12,8 @@ def get_users():
     # Get query parameters for filtering
     role = request.args.get('role')
     skill_name = request.args.get('skill')
+    include_all = request.args.get('include_all', 'false').lower() == 'true'
+    search = request.args.get('search')
     
     # Base query
     query = User.query
@@ -28,9 +30,23 @@ def get_users():
         skill = Skill.query.filter_by(name=skill_name).first()
         if skill:
             query = query.filter(User.skills.contains(skill))
+            
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            (User.username.ilike(search_pattern)) |
+            (User.first_name.ilike(search_pattern)) |
+            (User.last_name.ilike(search_pattern)) |
+            (User.title.ilike(search_pattern)) |
+            (User.tracking_id.ilike(search_pattern))
+        )
     
     # Execute query and get results
     users = query.all()
+    
+    # Filter active profiles unless include_all is requested (e.g. for admin view)
+    if not include_all:
+        users = [user for user in users if user.is_active_profile]
     
     return jsonify({
         'users': [user.to_dict() for user in users]
@@ -62,26 +78,43 @@ def update_profile():
             user.first_name = data['first_name']
         if 'last_name' in data:
             user.last_name = data['last_name']
+        if 'title' in data:
+            user.title = data['title']
+        if 'location' in data:
+            user.location = data['location']
         if 'bio' in data:
             user.bio = data['bio']
         if 'phone_number' in data:
             user.phone_number = data['phone_number']
-        if 'hourly_rate' in data and user.role == UserRole.FREELANCER:
-            user.hourly_rate = data['hourly_rate']
-        if 'availability' in data and user.role == UserRole.FREELANCER:
+        if 'whatsapp_number' in data:
+            user.whatsapp_number = data['whatsapp_number']
+        if 'contact_email' in data:
+            user.contact_email = data['contact_email']
+        if 'pricing_type' in data:
+            user.pricing_type = data['pricing_type']
+        if 'hourly_rate' in data:
+            user.hourly_rate = float(data['hourly_rate']) if data['hourly_rate'] else 0.0
+        if 'availability' in data:
             user.availability = data['availability']
         
         # Update skills
-        if 'skills' in data and user.role == UserRole.FREELANCER:
+        if 'skills' in data:
             # Clear existing skills
             user.skills = []
             
-            # Add new skills
-            for skill_name in data['skills']:
-                skill = Skill.query.filter_by(name=skill_name).first()
+            # Skills can be array of strings or comma-separated string
+            skills_list = data['skills']
+            if isinstance(skills_list, str):
+                skills_list = [s.strip() for s in skills_list.split(',') if s.strip()]
+                
+            for skill_name in skills_list:
+                skill_name_clean = skill_name.strip()
+                if not skill_name_clean:
+                    continue
+                skill = Skill.query.filter_by(name=skill_name_clean).first()
                 if not skill:
                     # Create new skill if it doesn't exist
-                    skill = Skill(name=skill_name)
+                    skill = Skill(name=skill_name_clean)
                     db.session.add(skill)
                 user.skills.append(skill)
         
