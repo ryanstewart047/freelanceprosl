@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/freelanceprosl/static/css/main.6cb15380.css",
+    "main.css": "/freelanceprosl/static/css/main.df0c9aeb.css",
     "main.js": "/freelanceprosl/static/js/main.cdc2f289.js",
     "static/js/453.254aa977.chunk.js": "/freelanceprosl/static/js/453.254aa977.chunk.js",
     "static/media/fa-solid-900.ttf": "/freelanceprosl/static/media/fa-solid-900.2582b0e4bcf85eceead0.ttf",
@@ -12,12 +12,12 @@
     "static/media/fa-v4compatibility.ttf": "/freelanceprosl/static/media/fa-v4compatibility.da94ef451f4969af06e6.ttf",
     "static/media/fa-v4compatibility.woff2": "/freelanceprosl/static/media/fa-v4compatibility.ea8f94e1d22e0d35ccd4.woff2",
     "index.html": "/freelanceprosl/index.html",
-    "main.6cb15380.css.map": "/freelanceprosl/static/css/main.6cb15380.css.map",
+    "main.df0c9aeb.css.map": "/freelanceprosl/static/css/main.df0c9aeb.css.map",
     "main.cdc2f289.js.map": "/freelanceprosl/static/js/main.cdc2f289.js.map",
     "453.254aa977.chunk.js.map": "/freelanceprosl/static/js/453.254aa977.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.6cb15380.css",
+    "static/css/main.df0c9aeb.css",
     "static/js/main.cdc2f289.js"
   ]
 }
