@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 // Components
 import Header from './components/Header';
@@ -36,59 +36,76 @@ import { initializeCookieServices } from './services/cookieService';
 // Styles
 import './styles/main.css';
 
-const App = () => {
-  const [showPopup, setShowPopup] = useState(false); // Set back to false for delayed display
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    // Show popup banner after 30 seconds
-    const timer = setTimeout(() => {
-      setShowPopup(true);
-    }, 30000); // 30 seconds delay
-
-    // Initialize cookie-dependent services
-    initializeCookieServices();
-
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isAdminRoute) {
+      const timer = setTimeout(() => {
+        setShowPopup(true);
+      }, 30000);
+      initializeCookieServices();
+      return () => clearTimeout(timer);
+    }
+  }, [isAdminRoute]);
 
   const closePopup = () => {
     setShowPopup(false);
   };
 
+  // Completely isolated Layout for Admin Panel
+  if (isAdminRoute) {
+    return (
+      <div className="admin-isolated-container">
+        <Routes>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+        </Routes>
+      </div>
+    );
+  }
+
+  // Standard Website Layout
+  return (
+    <div className="app-container">
+      <Header />
+      <DarkModeToggle />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/freelancers" element={<Freelancers />} />
+          <Route path="/freelancers/:id" element={<FreelancerProfile />} />
+          <Route path="/dashboard/*" element={<Dashboard />} />
+          <Route path="/jobs/:id" element={<JobDetails />} />
+          <Route path="/post-job" element={<PostJob />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <Footer />
+      {showPopup && <PopupBanner onClose={closePopup} />}
+      <BackToTop />
+      <CookieConsent />
+      <InstallPrompt />
+      <AppInstallBanner />
+    </div>
+  );
+};
+
+const App = () => {
   return (
     <Router>
-      <div className="app-container">
-        <Header />
-        <DarkModeToggle />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/freelancers" element={<Freelancers />} />
-            <Route path="/freelancers/:id" element={<FreelancerProfile />} />
-            <Route path="/dashboard/*" element={<Dashboard />} />
-            <Route path="/jobs/:id" element={<JobDetails />} />
-            <Route path="/post-job" element={<PostJob />} />
-            <Route path="/profile" element={<UserProfile />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-        <Footer />
-        {showPopup && <PopupBanner onClose={closePopup} />}
-        <BackToTop />
-        <CookieConsent />
-        <InstallPrompt />
-        <AppInstallBanner />
-      </div>
+      <AppContent />
     </Router>
   );
 };

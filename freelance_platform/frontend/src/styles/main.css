@@ -5,40 +5,40 @@
 
 /* CSS Variables */
 :root {
-  /* Colors - Updated to navy blue and red */
-  --primary-color: #001F3F; /* Navy Blue */
-  --primary-dark: #00152A;
-  --secondary-color: #FF0000; /* Red */
-  --secondary-dark: #CC0000;
-  --accent-color: #3B82F6; /* Light blue */
-  --text-color: #333333;
-  --text-light: #666666;
-  --bg-light: #F8F9FA;
-  --bg-white: #FFFFFF;
-  --border-color: #E0E0E0;
-  --success-color: #0D8A6A; /* Green */
-  --warning-color: #FFC107;
-  --danger-color: #F44336;
-  --info-color: #2196F3;
+  /* Colors - Updated to #040e40 Deep Navy, Red, and White */
+  --primary-color: #040e40; /* Deep Navy */
+  --primary-dark: #020726;
+  --secondary-color: #dc2626; /* Crimson Red */
+  --secondary-dark: #b91c1c;
+  --accent-color: #2563eb; /* Royal blue accent */
+  --text-color: #1e293b;
+  --text-light: #64748b;
+  --bg-light: #f8fafc;
+  --bg-white: #ffffff;
+  --border-color: #cbd5e1;
+  --success-color: #10b981; /* Green */
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
 
   /* Dark theme colors */
-  --dark-bg-primary: #00152A;
-  --dark-bg-secondary: #000A14;
-  --dark-text-primary: #F9FAFB;
-  --dark-text-secondary: #D1D5DB;
-  --dark-border-color: #374151;
-  --bg-dark: #00152A;
-  --bg-dark-secondary: #000A14;
-  --bg-darker: #000507;
-  --text-white: #F9FAFB;
-  --text-light-dark: #A1A1AA;
-  --text-gray-dark: #9CA3AF;
+  --dark-bg-primary: #040e40;
+  --dark-bg-secondary: #020726;
+  --dark-text-primary: #f8fafc;
+  --dark-text-secondary: #94a3b8;
+  --dark-border-color: #1e3a5f;
+  --bg-dark: #040e40;
+  --bg-dark-secondary: #020726;
+  --bg-darker: #010414;
+  --text-white: #ffffff;
+  --text-light-dark: #cbd5e1;
+  --text-gray-dark: #94a3b8;
   --text-dark: var(--dark-text-primary);
-  --dark-primary: #003366; 
-  --dark-secondary: #990000;
-  --dark-accent: #2563EB;
-  --dark-accent-hover: #1D4ED8;
-  --shadow-dark: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --dark-primary: #040e40; 
+  --dark-secondary: #dc2626;
+  --dark-accent: #3b82f6;
+  --dark-accent-hover: #2563eb;
+  --shadow-dark: 0 4px 15px rgba(0, 0, 0, 0.4);
 
   /* Typography */
   --body-font: 'Poppins', sans-serif;
@@ -448,21 +448,31 @@ input[type="email"],
 input[type="password"],
 input[type="number"],
 input[type="date"],
+input[type="tel"],
 select,
 textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
-  background-color: var(--bg-white);
-  transition: border-color var(--transition-fast);
+  background-color: #ffffff;
+  color: #0f172a !important;
+  font-weight: 500;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+  opacity: 0.8;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: #040e40;
+  box-shadow: 0 0 0 3px rgba(4, 14, 64, 0.15);
 }
 
 textarea {
@@ -668,12 +678,10 @@ input[type="radio"] {
 [data-theme="dark"] .dropdown-menu,
 [data-theme="dark"] input, 
 [data-theme="dark"] select, 
-[data-theme="dark"] textarea,
-[data-theme="dark"] button,
-[data-theme="dark"] .btn-outline {
-  background-color: var(--dark-bg-secondary);
-  color: var(--dark-text-primary);
-  border-color: var(--dark-border-color);
+[data-theme="dark"] textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #1e3a5f;
 }
 
 [data-theme="dark"] .footer {
