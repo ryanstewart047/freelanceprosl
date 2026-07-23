@@ -305,129 +305,192 @@ section {
   color: var(--text-light);
 }
 
-/* Buttons */
+/* ============================================================
+   GLOBAL BUTTON SYSTEM — All buttons: #040e40 Navy OR #dc2626 Red
+   ============================================================ */
+
+/* Base .btn style */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border-radius: var(--border-radius-md);
-  font-weight: 500;
+  font-family: var(--body-font);
+  font-weight: 600;
+  font-size: 1rem;
   text-align: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  border: none;
-  font-size: 1rem;
-  min-height: 44px; /* Improves touch targets */
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  min-height: 44px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
+/* Primary — Deep Navy #040e40 */
 .btn-primary {
-  background-color: var(--primary-color); /* Navy blue */
-  color: white;
+  background-color: #040e40 !important;
+  color: #ffffff !important;
+  border-color: #040e40 !important;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #020726 !important;
+  border-color: #020726 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(4, 14, 64, 0.35);
+  transform: translateY(-1px);
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-  color: white;
-}
-
+/* Secondary — Crimson Red #dc2626 */
 .btn-secondary {
-  background-color: var(--secondary-color); /* Red */
-  color: white;
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+  transform: translateY(-1px);
 }
 
-.btn-secondary:hover {
-  background-color: var(--secondary-dark);
-  color: white;
-}
-
+/* Outline Navy */
 .btn-outline {
-  background-color: transparent;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
+  background-color: transparent !important;
+  border: 2px solid #040e40 !important;
+  color: #040e40 !important;
+}
+.btn-outline:hover,
+.btn-outline:focus {
+  background-color: #040e40 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(4, 14, 64, 0.25);
+  transform: translateY(-1px);
 }
 
-.btn-outline:hover {
-  background-color: var(--primary-color);
-  color: white;
+/* Outline Red variant */
+.btn-outline-red {
+  background-color: transparent !important;
+  border: 2px solid #dc2626 !important;
+  color: #dc2626 !important;
+}
+.btn-outline-red:hover,
+.btn-outline-red:focus {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
 }
 
+/* Warning/caution also red */
+.btn-warning {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+.btn-warning:hover {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+/* Danger — also red for consistency */
+.btn-danger {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+.btn-danger:hover {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+/* Success — use navy for consistency instead of green */
+.btn-success {
+  background-color: #040e40 !important;
+  color: #ffffff !important;
+  border-color: #040e40 !important;
+}
+.btn-success:hover {
+  background-color: #020726 !important;
+  border-color: #020726 !important;
+  color: #ffffff !important;
+}
+
+/* Sizes */
 .btn-lg {
   padding: 1rem 2rem;
   font-size: 1.1rem;
 }
-
 .btn-sm {
   padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   min-height: 36px;
 }
-
 .btn-block {
   display: flex;
   width: 100%;
 }
 
-.btn:disabled {
-  opacity: 0.7;
+/* Disabled state */
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
+/* Group */
 .btn-group {
   display: flex;
   gap: var(--spacing-sm);
 }
 
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Icon spacing */
+.btn i,
+.btn svg {
+  flex-shrink: 0;
 }
 
-.btn-icon i,
-.btn-icon svg {
-  margin-right: 0.5rem;
+/* WhatsApp special keep green */
+.btn-whatsapp {
+  background-color: #25D366 !important;
+  color: #ffffff !important;
+  border-color: #25D366 !important;
+}
+.btn-whatsapp:hover {
+  background-color: #1da851 !important;
+  border-color: #1da851 !important;
+  color: #ffffff !important;
 }
 
-/* Responsive button adjustments */
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .btn {
-    padding: 0.7rem 1.4rem;
+    padding: 0.7rem 1.25rem;
   }
-  
   .btn-lg {
-    padding: 0.9rem 1.8rem;
+    padding: 0.875rem 1.75rem;
     font-size: 1rem;
   }
-  
   .btn-group {
     flex-direction: column;
   }
-  
-  .btn-group.btn-group-responsive {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .btn-group.btn-group-responsive .btn {
-    width: 100%;
-    margin-bottom: var(--spacing-xs);
-  }
 }
-
 @media (max-width: 576px) {
   .btn {
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1rem;
     font-size: 0.95rem;
   }
-  
-  .btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
-  }
-  
   .btn-sm {
-    padding: 0.4rem 0.8rem;
+    padding: 0.4rem 0.75rem;
     font-size: 0.85rem;
   }
 }
@@ -706,18 +769,34 @@ input[type="radio"] {
   color: var(--dark-text-secondary);
 }
 
+/* Dark mode does NOT override button colors — keep navy/red consistent */
 [data-theme="dark"] .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: #040e40 !important;
+  color: #ffffff !important;
+  border-color: #040e40 !important;
 }
-
 [data-theme="dark"] .btn-secondary {
-  background-color: var(--secondary-color);
-  color: white;
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
 }
-
+[data-theme="dark"] .btn-outline {
+  background-color: transparent !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .btn-outline:hover {
+  background-color: #ffffff !important;
+  color: #040e40 !important;
+}
+[data-theme="dark"] .btn-warning,
+[data-theme="dark"] .btn-danger {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
 [data-theme="dark"] a:hover {
-  color: var(--primary-color);
+  color: #dc2626;
 }
 
 /* Ensure sections with background colors get proper dark mode styling */
@@ -736,16 +815,10 @@ input[type="radio"] {
   color: var(--dark-text-secondary);
   opacity: 0.7;
 }
-
 [data-theme="dark"] p, 
 [data-theme="dark"] span, 
 [data-theme="dark"] a {
   color: var(--dark-text-secondary);
-}
-
-[data-theme="dark"] .btn-primary {
-  background-color: var(--primary-color);
-  color: var(--dark-text-primary);
 }
 
 /* Toggle Switch for Dark Mode */
