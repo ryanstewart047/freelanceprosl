@@ -1,5 +1,5 @@
 // Service Worker for FreelancePro SL PWA
-const CACHE_NAME = 'freelance-pro-sl-v5';
+const CACHE_NAME = 'freelance-pro-sl-v6';
 // Use self.location instead of location
 const BASE_PATH = self.location.pathname.includes('/freelanceprosl') 
   ? '/freelanceprosl' 

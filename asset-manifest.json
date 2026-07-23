@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/freelanceprosl/static/css/main.b9ffcbf0.css",
-    "main.js": "/freelanceprosl/static/js/main.aafe39ec.js",
+    "main.css": "/freelanceprosl/static/css/main.6cb15380.css",
+    "main.js": "/freelanceprosl/static/js/main.6e22f8a1.js",
     "static/js/453.254aa977.chunk.js": "/freelanceprosl/static/js/453.254aa977.chunk.js",
     "static/media/fa-solid-900.ttf": "/freelanceprosl/static/media/fa-solid-900.2582b0e4bcf85eceead0.ttf",
     "static/media/fa-brands-400.ttf": "/freelanceprosl/static/media/fa-brands-400.1815e00441357e01619e.ttf",
@@ -12,12 +12,12 @@
     "static/media/fa-v4compatibility.ttf": "/freelanceprosl/static/media/fa-v4compatibility.da94ef451f4969af06e6.ttf",
     "static/media/fa-v4compatibility.woff2": "/freelanceprosl/static/media/fa-v4compatibility.ea8f94e1d22e0d35ccd4.woff2",
     "index.html": "/freelanceprosl/index.html",
-    "main.b9ffcbf0.css.map": "/freelanceprosl/static/css/main.b9ffcbf0.css.map",
-    "main.aafe39ec.js.map": "/freelanceprosl/static/js/main.aafe39ec.js.map",
+    "main.6cb15380.css.map": "/freelanceprosl/static/css/main.6cb15380.css.map",
+    "main.6e22f8a1.js.map": "/freelanceprosl/static/js/main.6e22f8a1.js.map",
     "453.254aa977.chunk.js.map": "/freelanceprosl/static/js/453.254aa977.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.b9ffcbf0.css",
-    "static/js/main.aafe39ec.js"
+    "static/css/main.6cb15380.css",
+    "static/js/main.6e22f8a1.js"
   ]
 }
