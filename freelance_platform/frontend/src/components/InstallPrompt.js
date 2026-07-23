@@ -1,39 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/components/InstallPrompt.css';
 
+// Mobile detection helper
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 const InstallPrompt = () => {
   const [installPromptEvent, setInstallPromptEvent] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [showManualPrompt, setShowManualPrompt] = useState(false);
   const [installing, setInstalling] = useState(false);
-  const [installStatus, setInstallStatus] = useState(null); // 'success', 'failed', or null
+  const [installStatus, setInstallStatus] = useState(null);
 
   useEffect(() => {
-    // Show manual install prompt after 20 seconds if no automatic one is triggered
+    // Only run on mobile
+    if (!isMobileDevice()) return;
+
     const timer = setTimeout(() => {
-      // Check if not already in standalone mode and no prompt has been shown
       if (!window.matchMedia('(display-mode: standalone)').matches && !showPrompt) {
         setShowManualPrompt(true);
       }
     }, 20000);
 
     const handler = (e) => {
-      // Prevent the default prompt
       e.preventDefault();
-      // Store the event for later use
       setInstallPromptEvent(e);
-      // Show our custom prompt
       setShowPrompt(true);
-      // If we show automatic prompt, don't show manual one
       clearTimeout(timer);
     };
 
-    // Listen for beforeinstallprompt event
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Check if the app is already installed
-    const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches;
-    if (isAppInstalled) {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
       setShowPrompt(false);
       setShowManualPrompt(false);
       clearTimeout(timer);
@@ -45,20 +44,16 @@ const InstallPrompt = () => {
     };
   }, [showPrompt]);
 
-  // Add event listener for appinstalled event
   useEffect(() => {
     const handleAppInstalled = () => {
-      console.log('App was successfully installed');
       setInstalling(false);
       setInstallStatus('success');
-      // Hide prompt after successful installation after a delay
       setTimeout(() => {
         setShowPrompt(false);
       }, 3000);
     };
 
     window.addEventListener('appinstalled', handleAppInstalled);
-    
     return () => {
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
@@ -66,28 +61,16 @@ const InstallPrompt = () => {
 
   const handleInstallClick = () => {
     if (!installPromptEvent) return;
-
-    // Set installing state to show progress
     setInstalling(true);
-
-    // Show the native install prompt
     installPromptEvent.prompt();
-
-    // Wait for the user to respond to the prompt
     installPromptEvent.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-        // The appinstalled event will handle success
+        setInstallStatus('success');
       } else {
-        console.log('User dismissed the install prompt');
         setInstalling(false);
         setInstallStatus('failed');
-        // Reset status after 3 seconds
-        setTimeout(() => {
-          setInstallStatus(null);
-        }, 3000);
+        setTimeout(() => setInstallStatus(null), 3000);
       }
-      // Clear the stored prompt event
       setInstallPromptEvent(null);
     });
   };
@@ -95,22 +78,14 @@ const InstallPrompt = () => {
   const handleCloseClick = () => {
     setShowPrompt(false);
     setShowManualPrompt(false);
-    // Store preference in localStorage to not show again for some time
     localStorage.setItem('installPromptDismissed', Date.now().toString());
   };
 
-  const handleManualInstallClick = () => {
-    // Show instructions based on browser
-    setShowManualPrompt(false);
-    setShowPrompt(true);
-    // We don't have the install event, but we can still show instructions
-  };
-
-  // Don't show if we've checked local storage and user dismissed recently
   useEffect(() => {
+    if (!isMobileDevice()) return;
     const dismissedTime = localStorage.getItem('installPromptDismissed');
     if (dismissedTime) {
-      const HOUR_IN_MS = 3600000; // 1 hour (reduced from 24 hours)
+      const HOUR_IN_MS = 3600000;
       const wasRecentlyDismissed = Date.now() - Number(dismissedTime) < HOUR_IN_MS;
       if (wasRecentlyDismissed) {
         setShowPrompt(false);
@@ -119,10 +94,10 @@ const InstallPrompt = () => {
     }
   }, []);
 
-  // Detect iOS device
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  if (!showPrompt && !showManualPrompt) return null;
+  // Never render on desktop or if prompt dismissed
+  if (!isMobileDevice() || (!showPrompt && !showManualPrompt)) return null;
 
   if (showManualPrompt) {
     return (
@@ -131,12 +106,12 @@ const InstallPrompt = () => {
           <div className="install-prompt-header">
             <img src="images/favicon.svg" alt="FreelancePro SL" className="install-logo" />
             <h3>Add to Home Screen</h3>
-            <button className="install-close" onClick={handleCloseClick}>×</button>
+            <button className="install-close" onClick={handleCloseClick} title="Close">×</button>
           </div>
-          <p>Install FreelancePro SL on your device for quick access!</p>
+          <p>Install FreelancePro SL on your mobile device for quick access!</p>
           <div className="install-buttons">
             <button className="install-later" onClick={handleCloseClick}>Maybe Later</button>
-            <button className="install-now" onClick={handleManualInstallClick}>Show Me How</button>
+            <button className="install-now" onClick={() => { setShowManualPrompt(false); setShowPrompt(true); }}>Show Me How</button>
           </div>
         </div>
       </div>
@@ -149,7 +124,7 @@ const InstallPrompt = () => {
         <div className="install-prompt-header">
           <img src="images/favicon.svg" alt="FreelancePro SL" className="install-logo" />
           <h3>Install FreelancePro SL</h3>
-          <button className="install-close" onClick={handleCloseClick}>×</button>
+          <button className="install-close" onClick={handleCloseClick} title="Close">×</button>
         </div>
         {isIOS ? (
           <div>
@@ -159,10 +134,13 @@ const InstallPrompt = () => {
               <li>Scroll down and tap "Add to Home Screen"</li>
               <li>Tap "Add" in the top right corner</li>
             </ol>
+            <div className="install-buttons">
+              <button className="install-later" onClick={handleCloseClick}>Close</button>
+            </div>
           </div>
         ) : installPromptEvent ? (
           <div>
-            <p>Install this app on your device for quick and easy access when you're on the go!</p>
+            <p>Install this app on your device for quick access!</p>
             {installStatus === 'success' && <p className="install-status success">Installation successful!</p>}
             {installStatus === 'failed' && <p className="install-status failed">Installation cancelled</p>}
             <div className="install-buttons">
@@ -173,7 +151,6 @@ const InstallPrompt = () => {
                 disabled={installing}
               >
                 {installing ? 'Installing...' : 'Install Now'}
-                {installing && <span className="loading-spinner"></span>}
               </button>
             </div>
           </div>
