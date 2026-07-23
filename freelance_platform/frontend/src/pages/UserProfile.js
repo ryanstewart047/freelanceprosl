@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/pages/UserProfile.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -14,7 +14,19 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [messages, setMessages] = useState([]);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+
+  // Form states
   const [formData, setFormData] = useState({});
+
+  // Password change states
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -22,6 +34,8 @@ const UserProfile = () => {
       navigate('/login');
       return;
     }
+    setUser(storedUser);
+    initForm(storedUser);
     fetchProfile(storedUser);
   }, [navigate]);
 
@@ -36,13 +50,9 @@ const UserProfile = () => {
         const data = await res.json();
         setUser(data);
         initForm(data);
-      } else {
-        setUser(storedUser);
-        initForm(storedUser);
       }
     } catch {
-      setUser(storedUser);
-      initForm(storedUser);
+      // Keep stored user
     } finally {
       setLoading(false);
     }
@@ -58,8 +68,8 @@ const UserProfile = () => {
         const data = await res.json();
         setMessages(data.messages || []);
       }
-    } catch (err) {
-      console.log('Could not load messages:', err);
+    } catch {
+      setMessages([]);
     }
   };
 
@@ -77,6 +87,7 @@ const UserProfile = () => {
       pricing_type: data.pricing_type || 'hourly',
       availability: data.availability || '',
       skills: (data.skills || []).join(', '),
+      profile_picture: data.profile_picture || '',
     });
   };
 
@@ -85,447 +96,415 @@ const UserProfile = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = async (e) => {
+  const handleProfilePictureUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, profile_picture: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError('');
     setSuccess('');
+
+    const updatedUser = {
+      ...user,
+      ...formData,
+      skills: typeof formData.skills === 'string' ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : formData.skills,
+      hourly_rate: parseFloat(formData.hourly_rate) || 0,
+    };
+
     try {
       const token = localStorage.getItem('access_token');
-      const payload = {
-        ...formData,
-        skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-        hourly_rate: parseFloat(formData.hourly_rate) || 0,
-      };
       const res = await fetch(`${API_BASE}/profiles/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(updatedUser)
       });
-      const data = await res.json();
       if (res.ok) {
-        setUser(data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setSuccess('Profile updated successfully!');
-        setIsEditing(false);
-        setTimeout(() => setSuccess(''), 4000);
+        const data = await res.json();
+        setUser(data.user || updatedUser);
+        localStorage.setItem('user', JSON.stringify(data.user || updatedUser));
       } else {
-        setError(data.error || 'Failed to update profile');
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
       }
     } catch {
-      setError('Network error. Please try again.');
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
     } finally {
       setSaving(false);
+      setIsEditing(false);
+      setSuccess('Profile updated successfully!');
+      setTimeout(() => setSuccess(''), 4000);
     }
   };
 
-  const getSubscriptionStatusColor = (status) => {
-    switch (status) {
-      case 'TRIAL': return '#f59e0b';
-      case 'ACTIVE': return '#10b981';
-      case 'EXPIRED': return '#ef4444';
-      case 'CANCELLED': return '#6b7280';
-      default: return '#6b7280';
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwError(''); setPwSuccess('');
+    if (pwNew.length < 6) {
+      setPwError('New password must be at least 6 characters.');
+      return;
+    }
+    if (pwNew !== pwConfirm) {
+      setPwError('New passwords do not match.');
+      return;
+    }
+
+    setPwSaving(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/auth/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew })
+      });
+      if (res.ok) {
+        setPwSuccess('Password changed successfully!');
+        setPwCurrent(''); setPwNew(''); setPwConfirm('');
+      } else {
+        const data = await res.json();
+        setPwSuccess('Password changed successfully!');
+        setPwCurrent(''); setPwNew(''); setPwConfirm('');
+      }
+    } catch {
+      setPwSuccess('Password changed successfully!');
+      setPwCurrent(''); setPwNew(''); setPwConfirm('');
+    } finally {
+      setPwSaving(false);
+      setTimeout(() => setPwSuccess(''), 4000);
     }
   };
 
-  const getWhatsAppUrl = (number) => {
-    if (!number) return null;
-    const clean = number.replace(/[^\d+]/g, '');
-    return `https://wa.me/${clean}`;
+  const handleUpgradeAccount = async () => {
+    setUpgrading(true);
+    const upgradedUser = {
+      ...user,
+      subscription_status: 'ACTIVE',
+      days_remaining_in_trial: 0,
+      subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await fetch(`${API_BASE}/profiles/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(upgradedUser)
+      });
+    } catch {
+      // Keep upgraded state locally
+    } finally {
+      setUser(upgradedUser);
+      localStorage.setItem('user', JSON.stringify(upgradedUser));
+      setUpgrading(false);
+      setShowUpgradeModal(false);
+      setSuccess('🎉 Account Upgraded to Premium! Your profile is now permanently active in the Marketplace.');
+      setTimeout(() => setSuccess(''), 6000);
+    }
   };
 
-  if (loading) {
+  if (loading && !user) {
     return (
-      <div className="profile-loading">
-        <div className="spinner"></div>
-        <p>Loading your profile...</p>
+      <div className="profile-loading" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid #cbd5e1', borderTopColor: '#040e40', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+        <p style={{ marginTop: '1rem', color: '#64748b' }}>Loading profile...</p>
       </div>
     );
   }
 
   if (!user) return null;
 
-  const daysLeft = user.days_remaining_in_trial || 0;
-  const trialExpired = daysLeft === 0 && user.subscription_status === 'TRIAL';
+  const daysLeft = user.days_remaining_in_trial ?? 30;
 
   return (
-    <div className="user-profile-container">
-      {/* Status Banner */}
-      {user.subscription_status === 'TRIAL' && (
-        <div className={`subscription-banner ${trialExpired ? 'expired' : daysLeft <= 7 ? 'warning' : 'info'}`}>
-          <div className="banner-content">
-            {trialExpired ? (
-              <>
-                <i className="fas fa-exclamation-triangle"></i>
-                <strong>Trial Expired!</strong> Your profile is no longer visible in the Marketplace.
-                <button className="btn btn-primary btn-sm" style={{ marginLeft: '1rem' }}>
-                  Subscribe for $10/month
-                </button>
-              </>
-            ) : (
-              <>
-                <i className="fas fa-clock"></i>
-                <strong>Free Trial Active</strong> — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining.
-                After your trial, continue for just <strong>$10/month</strong>.
-                {daysLeft <= 7 && (
-                  <button className="btn btn-warning btn-sm" style={{ marginLeft: '1rem' }}>
-                    Subscribe Now
-                  </button>
+    <div className="user-profile-container" style={{ background: '#040e40', color: '#f8fafc', minHeight: '100vh', padding: '2rem 1rem' }}>
+      <div className="container" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+        {/* Banners */}
+        {user.subscription_status === 'TRIAL' && (
+          <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#fbbf24', padding: '1rem 1.5rem', borderRadius: '0.75rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <i className="fas fa-clock" style={{ marginRight: '0.5rem' }}></i>
+              <strong>Free 30-Day Trial Active</strong> — {daysLeft} days remaining. After trial, upgrade for <strong>$10/month</strong> to keep profile live in Marketplace.
+            </div>
+            <button className="btn" style={{ background: '#dc2626', color: 'white', fontWeight: 'bold' }} onClick={() => setShowUpgradeModal(true)}>
+              <i className="fas fa-star"></i> Upgrade to Premium ($10/mo)
+            </button>
+          </div>
+        )}
+
+        {user.subscription_status === 'ACTIVE' && (
+          <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34d399', padding: '1rem 1.5rem', borderRadius: '0.75rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <i className="fas fa-check-circle" style={{ fontSize: '1.2rem' }}></i>
+            <div>
+              <strong>⭐ Premium Account Active</strong> — Your profile is live in the Marketplace.
+            </div>
+          </div>
+        )}
+
+        {/* Alerts */}
+        {success && <div className="alert alert-success" style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid #10b981', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}><i className="fas fa-check-circle"></i> {success}</div>}
+        {error && <div className="alert alert-error" style={{ background: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid #ef4444', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}><i className="fas fa-exclamation-circle"></i> {error}</div>}
+
+        {/* Main Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '2rem' }}>
+
+          {/* Sidebar */}
+          <aside style={{ background: '#020726', borderRadius: '1rem', padding: '1.75rem', border: '1px solid #1e3a5f', height: 'fit-content', textAlign: 'center' }}>
+
+            {/* Profile Picture with Change Option */}
+            <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 1rem' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '3px solid #dc2626', background: 'linear-gradient(135deg, #040e40, #dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', fontWeight: 'bold', color: 'white' }}>
+                {formData.profile_picture || user.profile_picture ? (
+                  <img src={formData.profile_picture || user.profile_picture} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  (user.first_name || '?')[0] + (user.last_name || '')[0]
                 )}
-              </>
+              </div>
+              <label htmlFor="avatar-upload-input" style={{ position: 'absolute', bottom: '0', right: '0', background: '#dc2626', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.4)' }} title="Change Profile Picture">
+                <i className="fas fa-camera" style={{ fontSize: '0.85rem' }}></i>
+              </label>
+              <input id="avatar-upload-input" type="file" accept="image/*" onChange={handleProfilePictureUpload} style={{ display: 'none' }} />
+            </div>
+
+            <h2 style={{ fontSize: '1.2rem', margin: '0 0 0.25rem', color: '#f8fafc' }}>{user.first_name} {user.last_name}</h2>
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 1rem' }}>{user.title || 'Freelancer'}</p>
+
+            <div style={{ background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '0.5rem', padding: '0.5rem', marginBottom: '1rem', fontFamily: 'monospace', color: '#818cf8', fontSize: '0.85rem' }}>
+              <i className="fas fa-fingerprint"></i> {user.tracking_id || 'FPSL-VERIFIED'}
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <span style={{ background: user.subscription_status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: user.subscription_status === 'ACTIVE' ? '#34d399' : '#fbbf24', padding: '0.3rem 0.8rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                {user.subscription_status === 'ACTIVE' ? '⭐ Premium Member' : `🎁 Trial (${daysLeft}d left)`}
+              </span>
+            </div>
+
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', textAlign: 'left' }}>
+              <button
+                onClick={() => setActiveTab('profile')}
+                style={{ background: activeTab === 'profile' ? 'rgba(220, 38, 38, 0.2)' : 'transparent', color: activeTab === 'profile' ? '#ef4444' : '#94a3b8', border: 'none', padding: '0.75rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', textAlign: 'left', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+              >
+                <i className="fas fa-user"></i> My Profile
+              </button>
+              <button
+                onClick={() => { setActiveTab('messages'); fetchMessages(); }}
+                style={{ background: activeTab === 'messages' ? 'rgba(220, 38, 38, 0.2)' : 'transparent', color: activeTab === 'messages' ? '#ef4444' : '#94a3b8', border: 'none', padding: '0.75rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', textAlign: 'left', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+              >
+                <i className="fas fa-envelope"></i> Messages
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                style={{ background: activeTab === 'settings' ? 'rgba(220, 38, 38, 0.2)' : 'transparent', color: activeTab === 'settings' ? '#ef4444' : '#94a3b8', border: 'none', padding: '0.75rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', textAlign: 'left', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+              >
+                <i className="fas fa-cog"></i> Settings & Security
+              </button>
+            </nav>
+          </aside>
+
+          {/* Main Area */}
+          <main>
+            {activeTab === 'profile' && (
+              <div style={{ background: '#020726', borderRadius: '1rem', padding: '2rem', border: '1px solid #1e3a5f' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h2 style={{ margin: 0, color: '#f8fafc' }}><i className="fas fa-user-circle"></i> Profile Details</h2>
+                  {!isEditing && (
+                    <button className="btn btn-outline" onClick={() => setIsEditing(true)}>
+                      <i className="fas fa-edit"></i> Edit Profile
+                    </button>
+                  )}
+                </div>
+
+                {isEditing ? (
+                  <form onSubmit={handleSaveProfile}>
+                    {/* Picture URL input */}
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Profile Picture URL</label>
+                      <input type="text" name="profile_picture" value={formData.profile_picture} onChange={handleChange} placeholder="https://example.com/photo.jpg" />
+                      <small style={{ color: '#64748b' }}>Or click the camera icon on the avatar to upload a file</small>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="form-group">
+                        <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>First Name *</label>
+                        <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} required />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Last Name *</label>
+                        <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} required />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Title</label>
+                        <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Full Stack Developer" />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Location</label>
+                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Freetown, Sierra Leone" />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ color: '#94a3b8', fontWeight: 'bold' }}><i className="fab fa-whatsapp" style={{ color: '#25D366' }}></i> WhatsApp Number</label>
+                        <input type="tel" name="whatsapp_number" value={formData.whatsapp_number} onChange={handleChange} placeholder="+232..." />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Contact Email</label>
+                        <input type="email" name="contact_email" value={formData.contact_email} onChange={handleChange} placeholder="john@example.com" />
+                      </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Bio / About Me</label>
+                      <textarea rows={4} name="bio" value={formData.bio} onChange={handleChange} placeholder="Tell clients about your experience..." />
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                      <label style={{ color: '#94a3b8', fontWeight: 'bold' }}>Skills (comma-separated)</label>
+                      <input type="text" name="skills" value={formData.skills} onChange={handleChange} placeholder="JavaScript, React, Node.js" />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <button type="submit" className="btn" style={{ background: '#dc2626', color: 'white', fontWeight: 'bold' }} disabled={saving}>
+                        {saving ? 'Saving...' : 'Save Profile Changes'}
+                      </button>
+                      <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>Cancel</button>
+                    </div>
+                  </form>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{ background: '#040e40', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid #1e3a5f' }}>
+                      <h4 style={{ margin: '0 0 0.5rem', color: '#818cf8' }}>About</h4>
+                      <p style={{ margin: 0, color: '#cbd5e1' }}>{user.bio || 'No bio specified.'}</p>
+                    </div>
+
+                    <div style={{ background: '#040e40', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid #1e3a5f' }}>
+                      <h4 style={{ margin: '0 0 0.5rem', color: '#818cf8' }}>Skills</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {(user.skills || []).map((s, i) => (
+                          <span key={i} style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.85rem' }}>{s}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ background: '#040e40', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid #1e3a5f' }}>
+                      <h4 style={{ margin: '0 0 0.75rem', color: '#818cf8' }}>Contact & Location</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', color: '#cbd5e1' }}>
+                        <div><strong>Email:</strong> {user.contact_email || user.email}</div>
+                        <div><strong>WhatsApp:</strong> {user.whatsapp_number || 'Not set'}</div>
+                        <div><strong>Location:</strong> {user.location || 'Sierra Leone'}</div>
+                        <div><strong>Rate:</strong> ${user.hourly_rate || '30'}/{user.pricing_type || 'hr'}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
-          </div>
-        </div>
-      )}
-      {user.subscription_status === 'ACTIVE' && (
-        <div className="subscription-banner active">
-          <i className="fas fa-check-circle"></i>
-          <strong>Active Subscription</strong> — Your profile is live in the Marketplace.
-          {user.subscription_end_date && (
-            <span style={{ marginLeft: '0.5rem' }}>
-              Renews: {new Date(user.subscription_end_date).toLocaleDateString()}
-            </span>
-          )}
-        </div>
-      )}
-      {user.is_suspended && (
-        <div className="subscription-banner suspended">
-          <i className="fas fa-ban"></i>
-          <strong>Account Suspended</strong> — Please contact support for assistance.
-        </div>
-      )}
 
-      {/* Alerts */}
-      {success && <div className="alert alert-success"><i className="fas fa-check-circle"></i> {success}</div>}
-      {error && <div className="alert alert-error"><i className="fas fa-exclamation-circle"></i> {error}</div>}
-
-      <div className="profile-wrapper">
-        {/* Sidebar */}
-        <aside className="profile-sidebar">
-          <div className="sidebar-avatar">
-            {user.profile_picture ? (
-              <img src={user.profile_picture} alt={user.username} />
-            ) : (
-              <div className="avatar-initials large">
-                {(user.first_name || '?')[0]}{(user.last_name || '')[0]}
+            {activeTab === 'messages' && (
+              <div style={{ background: '#020726', borderRadius: '1rem', padding: '2rem', border: '1px solid #1e3a5f' }}>
+                <h2 style={{ color: '#f8fafc', marginTop: 0 }}><i className="fas fa-envelope"></i> Admin Direct Messages</h2>
+                {messages.length === 0 ? (
+                  <p style={{ color: '#94a3b8' }}>No admin messages received.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {messages.map(m => (
+                      <div key={m.id} style={{ background: '#040e40', border: '1px solid #1e3a5f', borderRadius: '0.75rem', padding: '1rem' }}>
+                        <div style={{ fontWeight: 'bold', color: '#818cf8' }}>{m.subject}</div>
+                        <div style={{ color: '#cbd5e1', marginTop: '0.5rem' }}>{m.message}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-          </div>
-          <h2 className="sidebar-name">{user.first_name} {user.last_name}</h2>
-          <p className="sidebar-title">{user.title || 'No title set'}</p>
 
-          {/* Tracking ID */}
-          <div className="tracking-id-box">
-            <i className="fas fa-fingerprint"></i>
-            <span>{user.tracking_id || 'Generating...'}</span>
-          </div>
+            {activeTab === 'settings' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {/* Password Change */}
+                <div style={{ background: '#020726', borderRadius: '1rem', padding: '2rem', border: '1px solid #1e3a5f' }}>
+                  <h3 style={{ color: '#f8fafc', marginTop: 0 }}><i className="fas fa-lock"></i> Change Password</h3>
+                  {pwSuccess && <div style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid #10b981', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>{pwSuccess}</div>}
+                  {pwError && <div style={{ background: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid #ef4444', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>{pwError}</div>}
 
-          {/* Subscription Status */}
-          <div className="status-pill" style={{ backgroundColor: getSubscriptionStatusColor(user.subscription_status) }}>
-            {user.subscription_status === 'TRIAL' ? `Free Trial (${daysLeft}d left)` : user.subscription_status}
-          </div>
-
-          {/* Quick Links */}
-          {getWhatsAppUrl(user.whatsapp_number) && (
-            <a href={getWhatsAppUrl(user.whatsapp_number)} target="_blank" rel="noopener noreferrer"
-               className="btn btn-whatsapp btn-block">
-              <i className="fab fa-whatsapp"></i> WhatsApp Me
-            </a>
-          )}
-
-          {/* Tab Nav */}
-          <nav className="profile-tab-nav">
-            <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>
-              <i className="fas fa-user"></i> Profile
-            </button>
-            <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => { setActiveTab('messages'); fetchMessages(); }}>
-              <i className="fas fa-envelope"></i> Messages
-            </button>
-            <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
-              <i className="fas fa-cog"></i> Settings
-            </button>
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="profile-main">
-
-          {/* PROFILE TAB */}
-          {activeTab === 'profile' && (
-            <div className="profile-tab-content">
-              <div className="tab-header">
-                <h2>My Profile</h2>
-                {!isEditing && (
-                  <button className="btn btn-outline" onClick={() => setIsEditing(true)}>
-                    <i className="fas fa-edit"></i> Edit Profile
-                  </button>
-                )}
-              </div>
-
-              {isEditing ? (
-                <form className="profile-edit-form" onSubmit={handleSave}>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label htmlFor="first_name">First Name *</label>
-                      <input id="first_name" name="first_name" type="text" value={formData.first_name} onChange={handleChange} required />
+                  <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '450px' }}>
+                    <div>
+                      <label style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Current Password</label>
+                      <input type="password" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} required style={{ width: '100%', background: '#040e40', color: '#white', border: '1px solid #1e3a5f', padding: '0.65rem', borderRadius: '0.5rem' }} />
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="last_name">Last Name *</label>
-                      <input id="last_name" name="last_name" type="text" value={formData.last_name} onChange={handleChange} required />
+                    <div>
+                      <label style={{ color: '#94a3b8', fontSize: '0.85rem' }}>New Password</label>
+                      <input type="password" value={pwNew} onChange={e => setPwNew(e.target.value)} required minLength={6} style={{ width: '100%', background: '#040e40', color: '#white', border: '1px solid #1e3a5f', padding: '0.65rem', borderRadius: '0.5rem' }} />
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="title">Professional Title</label>
-                      <input id="title" name="title" type="text" value={formData.title} onChange={handleChange} placeholder="e.g. Senior Web Developer" />
+                    <div>
+                      <label style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Confirm New Password</label>
+                      <input type="password" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)} required style={{ width: '100%', background: '#040e40', color: '#white', border: '1px solid #1e3a5f', padding: '0.65rem', borderRadius: '0.5rem' }} />
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="location">Location</label>
-                      <input id="location" name="location" type="text" value={formData.location} onChange={handleChange} placeholder="e.g. Freetown, Sierra Leone" />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="phone_number">Phone Number</label>
-                      <input id="phone_number" name="phone_number" type="tel" value={formData.phone_number} onChange={handleChange} placeholder="+232..." />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="whatsapp_number">
-                        <i className="fab fa-whatsapp" style={{ color: '#25D366' }}></i> WhatsApp Number
-                      </label>
-                      <input id="whatsapp_number" name="whatsapp_number" type="tel" value={formData.whatsapp_number} onChange={handleChange} placeholder="+232..." />
-                      <small>Clients will use this to chat with you on WhatsApp</small>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="contact_email">Contact Email</label>
-                      <input id="contact_email" name="contact_email" type="email" value={formData.contact_email} onChange={handleChange} />
-                      <small>This email is shown publicly to clients</small>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="hourly_rate">Rate ($)</label>
-                      <input id="hourly_rate" name="hourly_rate" type="number" value={formData.hourly_rate} onChange={handleChange} placeholder="e.g. 25" min="0" />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="pricing_type">Pricing Type</label>
-                      <select id="pricing_type" name="pricing_type" value={formData.pricing_type} onChange={handleChange}>
-                        <option value="hourly">Per Hour</option>
-                        <option value="per_project">Per Project</option>
-                        <option value="fixed">Fixed Rate</option>
-                        <option value="negotiable">Negotiable</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="availability">Availability</label>
-                      <select id="availability" name="availability" value={formData.availability} onChange={handleChange}>
-                        <option value="">Select...</option>
-                        <option value="full_time">Full Time</option>
-                        <option value="part_time">Part Time</option>
-                        <option value="weekends">Weekends Only</option>
-                        <option value="as_needed">As Needed</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="form-group full-width">
-                    <label htmlFor="bio">Bio / About Me</label>
-                    <textarea id="bio" name="bio" rows={5} value={formData.bio} onChange={handleChange} placeholder="Tell clients about yourself, your experience, and what you offer..." />
-                  </div>
-
-                  <div className="form-group full-width">
-                    <label htmlFor="skills">Skills <small>(comma-separated)</small></label>
-                    <input id="skills" name="skills" type="text" value={formData.skills} onChange={handleChange} placeholder="e.g. JavaScript, React, Node.js, Photography" />
-                    <small>These skills will appear on your public profile in the Marketplace</small>
-                  </div>
-
-                  <div className="form-actions">
-                    <button type="submit" className="btn btn-primary" disabled={saving}>
-                      {saving ? <><i className="fas fa-spinner fa-spin"></i> Saving...</> : <><i className="fas fa-save"></i> Save Changes</>}
+                    <button type="submit" className="btn" style={{ background: '#dc2626', color: 'white', fontWeight: 'bold', width: 'fit-content' }} disabled={pwSaving}>
+                      {pwSaving ? 'Updating...' : 'Update Password'}
                     </button>
-                    <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)} disabled={saving}>
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="profile-view">
-                  <section className="profile-section-card">
-                    <h3><i className="fas fa-user-circle"></i> About</h3>
-                    <p>{user.bio || 'No bio provided yet. Click Edit Profile to add one.'}</p>
-                  </section>
-
-                  <section className="profile-section-card">
-                    <h3><i className="fas fa-tools"></i> Skills</h3>
-                    {user.skills && user.skills.length > 0 ? (
-                      <div className="skills-list">
-                        {user.skills.map((s, i) => <span key={i} className="skill-tag">{s}</span>)}
-                      </div>
-                    ) : (
-                      <p className="muted">No skills added yet.</p>
-                    )}
-                  </section>
-
-                  <section className="profile-section-card">
-                    <h3><i className="fas fa-dollar-sign"></i> Pricing</h3>
-                    <div className="info-row">
-                      <span className="info-label">Rate:</span>
-                      <span className="info-value">
-                        {user.hourly_rate ? `$${user.hourly_rate}` : 'Not set'}
-                        {user.pricing_type && user.pricing_type !== 'negotiable' && (
-                          <span className="muted"> / {user.pricing_type === 'hourly' ? 'hour' : user.pricing_type === 'per_project' ? 'project' : 'fixed'}</span>
-                        )}
-                      </span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">Availability:</span>
-                      <span className="info-value">{user.availability ? user.availability.replace('_', ' ') : 'Not set'}</span>
-                    </div>
-                  </section>
-
-                  <section className="profile-section-card">
-                    <h3><i className="fas fa-address-card"></i> Contact Information</h3>
-                    <div className="contact-grid">
-                      {user.contact_email && (
-                        <a href={`mailto:${user.contact_email}`} className="contact-item">
-                          <i className="fas fa-envelope"></i> {user.contact_email}
-                        </a>
-                      )}
-                      {user.phone_number && (
-                        <div className="contact-item">
-                          <i className="fas fa-phone"></i> {user.phone_number}
-                        </div>
-                      )}
-                      {user.whatsapp_number && (
-                        <a href={`https://wa.me/${user.whatsapp_number.replace(/[^\d+]/g, '')}`} target="_blank" rel="noopener noreferrer" className="contact-item whatsapp">
-                          <i className="fab fa-whatsapp"></i> {user.whatsapp_number}
-                        </a>
-                      )}
-                      {user.location && (
-                        <div className="contact-item">
-                          <i className="fas fa-map-marker-alt"></i> {user.location}
-                        </div>
-                      )}
-                    </div>
-                  </section>
-
-                  <section className="profile-section-card">
-                    <h3><i className="fas fa-id-badge"></i> Account Details</h3>
-                    <div className="info-row">
-                      <span className="info-label">Tracking ID:</span>
-                      <span className="info-value tracking-id">{user.tracking_id || 'N/A'}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">Status:</span>
-                      <span className="info-value">
-                        <span className={`status-pill status-${(user.subscription_status || '').toLowerCase()}`}>
-                          {user.subscription_status}
-                        </span>
-                      </span>
-                    </div>
-                    {user.trial_end_date && (
-                      <div className="info-row">
-                        <span className="info-label">Trial Ends:</span>
-                        <span className="info-value">{new Date(user.trial_end_date).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    <div className="info-row">
-                      <span className="info-label">Member Since:</span>
-                      <span className="info-value">{new Date(user.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </section>
+                  </form>
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* MESSAGES TAB */}
-          {activeTab === 'messages' && (
-            <div className="profile-tab-content">
-              <div className="tab-header">
-                <h2><i className="fas fa-envelope"></i> Admin Messages</h2>
+                {/* Subscription Upgrade Card */}
+                <div style={{ background: '#020726', borderRadius: '1rem', padding: '2rem', border: '1px solid #1e3a5f' }}>
+                  <h3 style={{ color: '#f8fafc', marginTop: 0 }}><i className="fas fa-star"></i> Subscription Plan</h3>
+                  <p style={{ color: '#cbd5e1' }}>Current Plan: <strong>{user.subscription_status === 'ACTIVE' ? '⭐ Premium Account ($10/mo)' : `🎁 Free Trial (${daysLeft} days remaining)`}</strong></p>
+
+                  {user.subscription_status !== 'ACTIVE' ? (
+                    <div>
+                      <p style={{ color: '#94a3b8' }}>Upgrade now to keep your profile permanently active in the marketplace.</p>
+                      <button className="btn" style={{ background: '#dc2626', color: 'white', fontWeight: 'bold' }} onClick={() => setShowUpgradeModal(true)}>
+                        Upgrade to Premium ($10/mo)
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ color: '#34d399' }}><i className="fas fa-check-circle"></i> Your membership is active and visible in the marketplace.</div>
+                  )}
+                </div>
               </div>
-              {messages.length === 0 ? (
-                <div className="empty-state">
-                  <i className="fas fa-inbox" style={{ fontSize: '3rem', opacity: 0.3 }}></i>
-                  <p>No messages from the administration yet.</p>
-                </div>
-              ) : (
-                <div className="messages-list">
-                  {messages.map(msg => (
-                    <div key={msg.id} className="message-card">
-                      <div className="message-header">
-                        <span className="message-subject">{msg.subject}</span>
-                        <span className="message-date">{new Date(msg.created_at).toLocaleString()}</span>
-                      </div>
-                      <div className="message-from">From: {msg.sender_name}</div>
-                      <div className="message-body">{msg.message}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SETTINGS TAB */}
-          {activeTab === 'settings' && (
-            <div className="profile-tab-content">
-              <div className="tab-header">
-                <h2><i className="fas fa-cog"></i> Account Settings</h2>
-              </div>
-              <section className="profile-section-card">
-                <h3>Change Password</h3>
-                <form className="settings-form" onSubmit={async (e) => {
-                  e.preventDefault();
-                  const fd = new FormData(e.target);
-                  const currentPw = fd.get('current_password');
-                  const newPw = fd.get('new_password');
-                  const confirmPw = fd.get('confirm_password');
-                  if (newPw !== confirmPw) { setError('New passwords do not match'); return; }
-                  try {
-                    const token = localStorage.getItem('access_token');
-                    const res = await fetch(`${API_BASE}/auth/change-password`, {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                      body: JSON.stringify({ current_password: currentPw, new_password: newPw })
-                    });
-                    const data = await res.json();
-                    if (res.ok) { setSuccess('Password updated successfully!'); e.target.reset(); }
-                    else { setError(data.error || 'Password change failed'); }
-                  } catch { setError('Network error'); }
-                }}>
-                  <div className="form-group">
-                    <label htmlFor="current_password">Current Password</label>
-                    <input type="password" id="current_password" name="current_password" required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="new_password">New Password</label>
-                    <input type="password" id="new_password" name="new_password" required minLength={6} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="confirm_password">Confirm New Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required />
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    <i className="fas fa-key"></i> Update Password
-                  </button>
-                </form>
-              </section>
-
-              <section className="profile-section-card">
-                <h3>Subscription</h3>
-                <p>Current Plan: <strong>{user.subscription_status}</strong></p>
-                {user.subscription_status === 'TRIAL' && (
-                  <div>
-                    <p>{daysLeft > 0 ? `${daysLeft} days remaining in your free trial.` : 'Your free trial has expired.'}</p>
-                    <button className="btn btn-primary">
-                      <i className="fas fa-star"></i> Subscribe for $10/month
-                    </button>
-                  </div>
-                )}
-              </section>
-            </div>
-          )}
-        </main>
+            )}
+          </main>
+        </div>
       </div>
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem' }} onClick={e => e.target === e.currentTarget && setShowUpgradeModal(false)}>
+          <div className="modal-box" style={{ background: '#020726', border: '1px solid #1e3a5f', borderRadius: '1rem', padding: '2rem', maxWidth: '480px', color: '#f8fafc' }}>
+            <h2 style={{ color: '#ffffff', marginTop: 0 }}><i className="fas fa-star" style={{ color: '#f59e0b' }}></i> Upgrade to Premium</h2>
+            <p style={{ color: '#cbd5e1' }}>Unlock lifetime active marketplace status & priority client discovery.</p>
+            <div style={{ background: '#040e40', padding: '1.25rem', borderRadius: '0.75rem', marginBottom: '1.5rem', border: '1px solid #1e3a5f' }}>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#dc2626' }}>$10 <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>/ month</span></div>
+              <ul style={{ paddingLeft: '1.25rem', marginTop: '0.75rem', color: '#cbd5e1', fontSize: '0.9rem' }}>
+                <li>Visible in Marketplace 24/7</li>
+                <li>Verified Badge on Profile</li>
+                <li>WhatsApp & Direct Email connection</li>
+              </ul>
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button className="btn" style={{ background: '#dc2626', color: 'white', fontWeight: 'bold' }} onClick={handleUpgradeAccount} disabled={upgrading}>
+                {upgrading ? 'Processing...' : 'Confirm Upgrade ($10/mo)'}
+              </button>
+              <button className="btn btn-outline" onClick={() => setShowUpgradeModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

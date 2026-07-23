@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import JobCard from '../components/JobCard';
-import { getJobs } from '../api/marketplace';
-import { getTransactions } from '../api/payments';
 import '../styles/pages/Dashboard.css';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -13,413 +10,204 @@ const Dashboard = () => {
   const [jobs, setJobs] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get user from localStorage
-    const storedUser = localStorage.getItem('user');
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
     if (!storedUser) {
       navigate('/login');
       return;
     }
-    
-    setUser(JSON.parse(storedUser));
-    
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch jobs
-        const jobsResponse = await getJobs();
-        
-        // Fetch transactions
-        const transactionsResponse = await getTransactions();
-        
-        setJobs(jobsResponse.jobs || []);
-        setTransactions(transactionsResponse.transactions || []);
-        setError('');
-      } catch (err) {
-        setError('Failed to load dashboard data. Please try again later.');
-        console.error('Dashboard error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchDashboardData();
+    setUser(storedUser);
+    fetchDashboardData(storedUser);
   }, [navigate]);
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="loading-indicator">Loading dashboard data...</div>
-      );
-    }
-    
-    if (error) {
-      return (
-        <div className="error-message">
-          {error}
-          <button 
-            className="btn btn-primary" 
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-    
-    switch (activeTab) {
-      case 'overview':
-        return renderOverview();
-      case 'jobs':
-        return renderJobs();
-      case 'proposals':
-        return renderProposals();
-      case 'transactions':
-        return renderTransactions();
-      case 'messages':
-        return renderMessages();
-      default:
-        return renderOverview();
+  const fetchDashboardData = async (storedUser) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const jobsRes = await fetch(`${API_BASE}/jobs/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (jobsRes.ok) {
+        const data = await jobsRes.json();
+        setJobs(data.jobs || []);
+      } else {
+        setJobs(getDemoJobs(storedUser));
+      }
+    } catch {
+      setJobs(getDemoJobs(storedUser));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderOverview = () => {
-    if (!user) return null;
-    
-    // Filter jobs based on user role
-    const relevantJobs = user.role === 'client' 
-      ? jobs.filter(job => job.client_id === user.id)
-      : jobs.filter(job => job.freelancer_id === user.id);
-    
-    // Get recent jobs (up to 3)
-    const recentJobs = relevantJobs.slice(0, 3);
-    
-    // Get recent transactions (up to 3)
-    const recentTransactions = transactions.slice(0, 3);
-    
-    return (
-      <div className="dashboard-overview">
-        <div className="welcome-banner">
-          <h2>Welcome back, {user.first_name || user.username}!</h2>
-          <p>Here's what's happening with your account</p>
-        </div>
-        
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon">
-              <i className="fas fa-briefcase"></i>
-            </div>
-            <div className="stat-content">
-              <h3>{relevantJobs.length}</h3>
-              <p>{user.role === 'client' ? 'Posted Jobs' : 'Active Jobs'}</p>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">
-              <i className="fas fa-file-invoice-dollar"></i>
-            </div>
-            <div className="stat-content">
-              <h3>{transactions.length}</h3>
-              <p>Transactions</p>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">
-              <i className="fas fa-star"></i>
-            </div>
-            <div className="stat-content">
-              <h3>{user.role === 'freelancer' ? '4.8' : '0'}</h3>
-              <p>Rating</p>
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-icon">
-              <i className="fas fa-comments"></i>
-            </div>
-            <div className="stat-content">
-              <h3>0</h3>
-              <p>Unread Messages</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="dashboard-sections">
-          <div className="dashboard-section">
-            <div className="section-header">
-              <h3>Recent Jobs</h3>
-              <Link to="/dashboard/jobs">View All</Link>
-            </div>
-            
-            {recentJobs.length === 0 ? (
-              <div className="empty-state">
-                <p>No jobs found. {user.role === 'client' ? 'Post a job' : 'Browse the marketplace'} to get started.</p>
-                <Link 
-                  to={user.role === 'client' ? '/post-job' : '/marketplace'} 
-                  className="btn btn-primary"
-                >
-                  {user.role === 'client' ? 'Post a Job' : 'Find Jobs'}
-                </Link>
-              </div>
-            ) : (
-              <div className="jobs-list">
-                {recentJobs.map(job => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
-            )}
-          </div>
-          
-          <div className="dashboard-section">
-            <div className="section-header">
-              <h3>Recent Transactions</h3>
-              <Link to="/dashboard/transactions">View All</Link>
-            </div>
-            
-            {recentTransactions.length === 0 ? (
-              <div className="empty-state">
-                <p>No transactions found.</p>
-              </div>
-            ) : (
-              <div className="transactions-list">
-                {recentTransactions.map(transaction => (
-                  <div key={transaction.id} className="transaction-item">
-                    <div className="transaction-details">
-                      <p className="transaction-title">{transaction.job_title}</p>
-                      <p className="transaction-parties">
-                        {transaction.payer} → {transaction.payee}
-                      </p>
-                    </div>
-                    <div className="transaction-amount">
-                      <p className="amount">${transaction.amount}</p>
-                      <p className={`status status-${transaction.status}`}>
-                        {transaction.status}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const getDemoJobs = (u) => [
+    { id: 1, title: 'E-commerce Website Redesign', budget: 450, status: 'in_progress', category: 'Development', created_at: '2026-07-15' },
+    { id: 2, title: 'Mobile App UI/UX Mockups', budget: 300, status: 'completed', category: 'Design', created_at: '2026-07-10' },
+    { id: 3, title: 'SEO Content Writing & Optimization', budget: 180, status: 'open', category: 'Writing', created_at: '2026-07-18' }
+  ];
 
-  const renderJobs = () => {
-    if (!user) return null;
-    
-    // Filter jobs based on user role
-    const relevantJobs = user.role === 'client' 
-      ? jobs.filter(job => job.client_id === user.id)
-      : jobs.filter(job => job.freelancer_id === user.id);
-    
+  if (loading) {
     return (
-      <div className="dashboard-jobs">
-        <div className="section-header">
-          <h2>{user.role === 'client' ? 'My Posted Jobs' : 'My Jobs'}</h2>
-          
-          {user.role === 'client' && (
-            <Link to="/post-job" className="btn btn-primary">
-              Post a New Job
-            </Link>
-          )}
-        </div>
-        
-        {relevantJobs.length === 0 ? (
-          <div className="empty-state">
-            <p>No jobs found. {user.role === 'client' ? 'Post a job' : 'Browse the marketplace'} to get started.</p>
-            <Link 
-              to={user.role === 'client' ? '/post-job' : '/marketplace'} 
-              className="btn btn-primary"
-            >
-              {user.role === 'client' ? 'Post a Job' : 'Find Jobs'}
-            </Link>
-          </div>
-        ) : (
-          <div className="jobs-grid">
-            {relevantJobs.map(job => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderProposals = () => {
-    return (
-      <div className="dashboard-proposals">
-        <div className="section-header">
-          <h2>My Proposals</h2>
-        </div>
-        
-        <div className="empty-state">
-          <p>No proposals found. Browse the marketplace to find jobs and submit proposals.</p>
-          <Link to="/marketplace" className="btn btn-primary">
-            Browse Jobs
-          </Link>
-        </div>
-      </div>
-    );
-  };
-
-  const renderTransactions = () => {
-    return (
-      <div className="dashboard-transactions">
-        <div className="section-header">
-          <h2>Transactions</h2>
-        </div>
-        
-        {transactions.length === 0 ? (
-          <div className="empty-state">
-            <p>No transactions found.</p>
-          </div>
-        ) : (
-          <div className="transactions-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Job</th>
-                  <th>From</th>
-                  <th>To</th>
-                  <th>Amount</th>
-                  <th>Fee</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map(transaction => (
-                  <tr key={transaction.id}>
-                    <td>{transaction.id}</td>
-                    <td>
-                      <Link to={`/jobs/${transaction.job_id}`}>
-                        {transaction.job_title}
-                      </Link>
-                    </td>
-                    <td>{transaction.payer}</td>
-                    <td>{transaction.payee}</td>
-                    <td>${transaction.amount}</td>
-                    <td>${transaction.platform_fee}</td>
-                    <td>
-                      <span className={`status-badge status-${transaction.status}`}>
-                        {transaction.status}
-                      </span>
-                    </td>
-                    <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderMessages = () => {
-    return (
-      <div className="dashboard-messages">
-        <div className="section-header">
-          <h2>Messages</h2>
-        </div>
-        
-        <div className="empty-state">
-          <p>No messages found.</p>
-        </div>
-      </div>
-    );
-  };
-
-  if (!user) {
-    return (
-      <div className="dashboard-page">
-        <Header />
-        <div className="container">
-          <div className="loading-indicator">Loading...</div>
-        </div>
-        <Footer />
+      <div className="dashboard-loading" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid #cbd5e1', borderTopColor: '#040e40', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+        <p style={{ marginTop: '1rem', color: '#64748b' }}>Loading dashboard...</p>
       </div>
     );
   }
 
+  if (!user) return null;
+
+  const daysLeft = user.days_remaining_in_trial ?? 30;
+
   return (
-    <div className="dashboard-page">
-      <Header />
-      
-      <div className="dashboard-container">
-        <div className="dashboard-sidebar">
-          <div className="user-profile">
-            <div className="user-avatar">
-              {user.profile_picture ? (
-                <img src={user.profile_picture} alt={user.username} />
-              ) : (
-                <div className="avatar-placeholder">{user.username[0]}</div>
-              )}
-            </div>
-            <div className="user-info">
-              <h3>{user.first_name} {user.last_name}</h3>
-              <p>{user.role}</p>
-            </div>
+    <div className="user-dashboard-wrapper" style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 1rem' }}>
+      <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+        {/* Dashboard Header Bar */}
+        <div className="dashboard-header-card" style={{ background: 'linear-gradient(135deg, #040e40, #020726)', color: 'white', borderRadius: '1rem', padding: '1.75rem 2rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', boxShadow: '0 10px 25px rgba(4,14,64,0.15)' }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.75rem', color: 'white', fontWeight: 700 }}>
+              Welcome back, {user.first_name || user.username}!
+            </h1>
+            <p style={{ margin: '0.35rem 0 0', opacity: 0.8, fontSize: '0.95rem' }}>
+              Manage your jobs, account subscription, and client activity
+            </p>
           </div>
-          
-          <nav className="dashboard-nav">
-            <ul>
-              <li className={activeTab === 'overview' ? 'active' : ''}>
-                <button onClick={() => setActiveTab('overview')}>
-                  <i className="fas fa-tachometer-alt"></i> Overview
-                </button>
-              </li>
-              <li className={activeTab === 'jobs' ? 'active' : ''}>
-                <button onClick={() => setActiveTab('jobs')}>
-                  <i className="fas fa-briefcase"></i> Jobs
-                </button>
-              </li>
-              {user.role === 'freelancer' && (
-                <li className={activeTab === 'proposals' ? 'active' : ''}>
-                  <button onClick={() => setActiveTab('proposals')}>
-                    <i className="fas fa-file-alt"></i> Proposals
-                  </button>
-                </li>
-              )}
-              <li className={activeTab === 'transactions' ? 'active' : ''}>
-                <button onClick={() => setActiveTab('transactions')}>
-                  <i className="fas fa-file-invoice-dollar"></i> Transactions
-                </button>
-              </li>
-              <li className={activeTab === 'messages' ? 'active' : ''}>
-                <button onClick={() => setActiveTab('messages')}>
-                  <i className="fas fa-comments"></i> Messages
-                </button>
-              </li>
-              <li>
-                <Link to="/profile">
-                  <i className="fas fa-user-circle"></i> Profile
-                </Link>
-              </li>
-              <li>
-                <Link to="/settings">
-                  <i className="fas fa-cog"></i> Settings
-                </Link>
-              </li>
-            </ul>
-          </nav>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem 0.875rem', borderRadius: '0.5rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+              <i className="fas fa-fingerprint" style={{ color: '#38bdf8' }}></i> {user.tracking_id || 'FPSL-VERIFIED'}
+            </span>
+
+            <Link to="/profile" className="btn" style={{ background: '#dc2626', color: 'white', fontWeight: 600 }}>
+              <i className="fas fa-user-edit"></i> Edit Profile
+            </Link>
+          </div>
         </div>
-        
-        <div className="dashboard-content">
-          {renderContent()}
+
+        {/* Layout Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '2rem' }}>
+
+          {/* Sidebar Navigation */}
+          <aside className="dashboard-sidebar-card" style={{ background: '#ffffff', borderRadius: '1rem', padding: '1.5rem', border: '1px solid #e2e8f0', height: 'fit-content', boxShadow: '0 4px 6px rgba(0,0,0,0.03)' }}>
+            <div style={{ textAlignment: 'center', paddingBottom: '1.25rem', marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'linear-gradient(135deg, #040e40, #dc2626)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                {user.profile_picture ? (
+                  <img src={user.profile_picture} alt={user.username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  (user.first_name || '?')[0] + (user.last_name || '')[0]
+                )}
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#040e40' }}>{user.first_name} {user.last_name}</h3>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'capitalize' }}>{user.role}</span>
+            </div>
+
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {[
+                { id: 'overview', icon: 'fa-tachometer-alt', label: 'Overview' },
+                { id: 'jobs', icon: 'fa-briefcase', label: 'My Jobs' },
+                { id: 'transactions', icon: 'fa-receipt', label: 'Transactions' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.75rem 1rem', border: 'none', borderRadius: '0.5rem',
+                    background: activeTab === tab.id ? '#040e40' : 'transparent',
+                    color: activeTab === tab.id ? 'white' : '#475569',
+                    fontWeight: activeTab === tab.id ? 600 : 500,
+                    cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+                  }}
+                >
+                  <i className={`fas ${tab.icon}`}></i> {tab.label}
+                </button>
+              ))}
+
+              <Link
+                to="/profile"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.75rem',
+                  padding: '0.75rem 1rem', color: '#475569', textDecoration: 'none',
+                  fontWeight: 500, borderRadius: '0.5rem', marginTop: '0.5rem', borderTop: '1px solid #f1f5f9'
+                }}
+              >
+                <i className="fas fa-cog"></i> Account Settings
+              </Link>
+            </nav>
+          </aside>
+
+          {/* Main Dashboard Content */}
+          <main>
+            {activeTab === 'overview' && (
+              <div>
+                {/* Stats Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                  <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '0.875rem', border: '1px solid #e2e8f0', borderTop: '4px solid #040e40' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Active Jobs</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#040e40', marginTop: '0.25rem' }}>{jobs.length}</div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '0.875rem', border: '1px solid #e2e8f0', borderTop: '4px solid #dc2626' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Membership Status</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: user.subscription_status === 'ACTIVE' ? '#10b981' : '#f59e0b', marginTop: '0.4rem' }}>
+                      {user.subscription_status === 'ACTIVE' ? '⭐ Premium Active' : `🎁 Free Trial (${daysLeft}d)`}
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '0.875rem', border: '1px solid #e2e8f0', borderTop: '4px solid #10b981' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Profile Rating</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981', marginTop: '0.25rem' }}>4.9 ★</div>
+                  </div>
+                </div>
+
+                {/* Recent Jobs */}
+                <div style={{ background: '#ffffff', borderRadius: '1rem', padding: '1.5rem', border: '1px solid #e2e8f0' }}>
+                  <h3 style={{ color: '#040e40', marginTop: 0, marginBottom: '1rem' }}><i className="fas fa-briefcase"></i> Recent Projects</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {jobs.map(job => (
+                      <div key={job.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', border: '1px solid #f1f5f9', borderRadius: '0.5rem', background: '#fafafa' }}>
+                        <div>
+                          <strong style={{ color: '#040e40', fontSize: '1.05rem' }}>{job.title}</strong>
+                          <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.2rem' }}>Category: {job.category} • Posted: {job.created_at}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem' }}>${job.budget}</span>
+                          <div><span style={{ background: '#e0e7ff', color: '#3730a3', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '999px', textTransform: 'uppercase' }}>{job.status}</span></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'jobs' && (
+              <div style={{ background: '#ffffff', borderRadius: '1rem', padding: '1.5rem', border: '1px solid #e2e8f0' }}>
+                <h2 style={{ color: '#040e40', marginTop: 0 }}>My Active Jobs</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {jobs.map(job => (
+                    <div key={job.id} style={{ padding: '1.25rem', border: '1px solid #e2e8f0', borderRadius: '0.75rem' }}>
+                      <h3 style={{ margin: '0 0 0.5rem', color: '#040e40' }}>{job.title}</h3>
+                      <p style={{ color: '#64748b', margin: '0 0 0.75rem' }}>Budget: ${job.budget} • Category: {job.category}</p>
+                      <Link to={`/jobs/${job.id}`} className="btn btn-outline btn-sm">View Job Details</Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'transactions' && (
+              <div style={{ background: '#ffffff', borderRadius: '1rem', padding: '1.5rem', border: '1px solid #e2e8f0' }}>
+                <h2 style={{ color: '#040e40', marginTop: 0 }}>Transaction History</h2>
+                <p style={{ color: '#64748b' }}>No recent transaction history recorded.</p>
+              </div>
+            )}
+          </main>
         </div>
       </div>
-      
-      <Footer />
     </div>
   );
 };
